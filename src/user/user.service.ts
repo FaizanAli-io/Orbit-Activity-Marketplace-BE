@@ -9,12 +9,24 @@ export class UserService {
     return this.prisma.user.create({ data });
   }
 
-  async findAll(): Promise<User[]> {
-    return this.prisma.user.findMany();
+  async findAll(): Promise<any[]> {
+    return this.prisma.user
+      .findMany({
+        include: { auth: { select: { email: true } } },
+      })
+      .then((users) =>
+        users.map(({ auth, ...u }) => ({ ...u, email: auth[0]?.email })),
+      );
   }
 
-  async findOne(id: string): Promise<User | null> {
-    return this.prisma.user.findUnique({ where: { id } });
+  async findOne(id: string): Promise<any | null> {
+    const user = await this.prisma.user.findUnique({
+      where: { id },
+      include: { auth: { select: { email: true } } },
+    });
+    if (!user) return null;
+    const { auth, ...u } = user;
+    return { ...u, email: auth[0]?.email };
   }
 
   async update(id: string, data: Prisma.UserUpdateInput): Promise<User> {
@@ -23,5 +35,9 @@ export class UserService {
 
   async remove(id: string): Promise<User> {
     return this.prisma.user.delete({ where: { id } });
+  }
+
+  async deleteAuth(id: string): Promise<void> {
+    await this.prisma.auth.deleteMany({ where: { userId: id } });
   }
 }

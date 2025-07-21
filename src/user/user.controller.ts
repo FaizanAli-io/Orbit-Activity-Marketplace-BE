@@ -17,21 +17,10 @@ import {
 import { Prisma } from '@prisma/client';
 import { UserService } from './user.service';
 
-@ApiTags('users')
+@ApiTags('Users')
 @Controller('users')
 export class UserController {
   constructor(private readonly userService: UserService) {}
-
-  @Post()
-  @ApiOperation({ summary: 'Create user' })
-  @ApiBody({ type: Object })
-  @ApiResponse({
-    status: 201,
-    description: 'The user has been successfully created.',
-  })
-  create(@Body() data: Prisma.UserCreateInput) {
-    return this.userService.create(data);
-  }
 
   @Get()
   @ApiOperation({ summary: 'Get all users' })
@@ -67,7 +56,9 @@ export class UserController {
     status: 200,
     description: 'The user has been successfully deleted.',
   })
-  remove(@Param('id') id: string) {
-    return this.userService.remove(id);
+  async remove(@Param('id') id: string) {
+    await this.userService.remove(id);
+    await this.userService.deleteAuth(id);
+    return { message: 'User and auth deleted' };
   }
 }

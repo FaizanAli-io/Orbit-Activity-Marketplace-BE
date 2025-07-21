@@ -30,11 +30,19 @@ enum ActivityCategory {
   OTHER
 }
 
+enum AuthStatus {
+  PENDING
+  APPROVED
+}
+
+enum AuthType {
+  USER
+  VENDOR
+}
+
 model User {
   id          String          @id @default(uuid())
-  username    String          @unique
-  email       String          @unique
-  password    String
+  name        String
   phone       String?
   avatar      String?
   preferences Json?
@@ -45,18 +53,21 @@ model User {
   friendOf    User[]          @relation("UserFriends")
   calendar    CalendarEvent[]
   payments    Payment[]
+  auth        Auth[]
 }
 
 model Vendor {
   id          String     @id @default(uuid())
   name        String
-  email       String     @unique
   phone       String?
   profileDesc String?
   location    String?
   rating      Float?     @default(0)
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
   activities  Activity[]
   payments    Payment[]
+  auth        Auth[]
 }
 
 model Activity {
@@ -74,6 +85,8 @@ model Activity {
   images         Json?
   quota          Int?
   discount       Float?           @default(0)
+  createdAt      DateTime         @default(now())
+  updatedAt      DateTime         @updatedAt
   likedBy        User[]           @relation("LikedActivities")
   calendarEvents CalendarEvent[]
   Payment        Payment[]
@@ -101,4 +114,19 @@ model CalendarEvent {
   activityId String
   startTime  DateTime
   endTime    DateTime
+}
+
+model Auth {
+  id                 String     @id @default(uuid())
+  email              String     @unique
+  password           String
+  accessToken        String?
+  verificationToken  String?
+  passwordResetToken String?
+  status             AuthStatus
+  type               AuthType
+  userId             String?    @unique
+  vendorId           String?    @unique
+  user               User?      @relation(fields: [userId], references: [id])
+  vendor             Vendor?    @relation(fields: [vendorId], references: [id])
 }

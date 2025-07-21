@@ -1,11 +1,3 @@
-/*
-  Warnings:
-
-  - You are about to drop the column `name` on the `User` table. All the data in the column will be lost.
-  - A unique constraint covering the columns `[username]` on the table `User` will be added. If there are existing duplicate values, this will fail.
-  - Added the required column `username` to the `User` table without a default value. This is not possible if the table is not empty.
-
-*/
 -- CreateEnum
 CREATE TYPE "PaymentStatus" AS ENUM ('PENDING', 'COMPLETED', 'FAILED', 'REFUNDED');
 
@@ -15,17 +7,26 @@ CREATE TYPE "PaymentMethod" AS ENUM ('CREDIT_CARD', 'PAYPAL', 'OTHER');
 -- CreateEnum
 CREATE TYPE "ActivityCategory" AS ENUM ('ADVENTURE', 'RELAXATION', 'EDUCATION', 'SPORTS', 'MUSIC', 'ART', 'OTHER');
 
--- AlterTable
-ALTER TABLE "User" DROP COLUMN "name",
-ADD COLUMN     "phone" TEXT,
-ADD COLUMN     "preferences" JSONB,
-ADD COLUMN     "username" TEXT NOT NULL;
+-- CreateEnum
+CREATE TYPE "AuthStatus" AS ENUM ('PENDING', 'APPROVED');
+
+-- CreateTable
+CREATE TABLE "User" (
+    "id" TEXT NOT NULL,
+    "name" TEXT NOT NULL,
+    "phone" TEXT,
+    "avatar" TEXT,
+    "preferences" JSONB,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+
+    CONSTRAINT "User_pkey" PRIMARY KEY ("id")
+);
 
 -- CreateTable
 CREATE TABLE "Vendor" (
     "id" TEXT NOT NULL,
     "name" TEXT NOT NULL,
-    "email" TEXT NOT NULL,
     "phone" TEXT,
     "profileDesc" TEXT,
     "location" TEXT,
@@ -79,6 +80,17 @@ CREATE TABLE "CalendarEvent" (
 );
 
 -- CreateTable
+CREATE TABLE "Auth" (
+    "id" TEXT NOT NULL,
+    "email" TEXT NOT NULL,
+    "password" TEXT NOT NULL,
+    "token" TEXT,
+    "status" "AuthStatus" NOT NULL,
+
+    CONSTRAINT "Auth_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
 CREATE TABLE "_UserFriends" (
     "A" TEXT NOT NULL,
     "B" TEXT NOT NULL,
@@ -95,16 +107,13 @@ CREATE TABLE "_LikedActivities" (
 );
 
 -- CreateIndex
-CREATE UNIQUE INDEX "Vendor_email_key" ON "Vendor"("email");
+CREATE UNIQUE INDEX "Auth_email_key" ON "Auth"("email");
 
 -- CreateIndex
 CREATE INDEX "_UserFriends_B_index" ON "_UserFriends"("B");
 
 -- CreateIndex
 CREATE INDEX "_LikedActivities_B_index" ON "_LikedActivities"("B");
-
--- CreateIndex
-CREATE UNIQUE INDEX "User_username_key" ON "User"("username");
 
 -- AddForeignKey
 ALTER TABLE "Activity" ADD CONSTRAINT "Activity_vendorId_fkey" FOREIGN KEY ("vendorId") REFERENCES "Vendor"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
@@ -123,6 +132,12 @@ ALTER TABLE "CalendarEvent" ADD CONSTRAINT "CalendarEvent_userId_fkey" FOREIGN K
 
 -- AddForeignKey
 ALTER TABLE "CalendarEvent" ADD CONSTRAINT "CalendarEvent_activityId_fkey" FOREIGN KEY ("activityId") REFERENCES "Activity"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "Auth" ADD CONSTRAINT "Auth_user_id_fkey" FOREIGN KEY ("id") REFERENCES "User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "Auth" ADD CONSTRAINT "Auth_vendor_id_fkey" FOREIGN KEY ("id") REFERENCES "Vendor"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "_UserFriends" ADD CONSTRAINT "_UserFriends_A_fkey" FOREIGN KEY ("A") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
