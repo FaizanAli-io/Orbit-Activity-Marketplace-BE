@@ -1,0 +1,110 @@
+Project Proposal: Activity Marketplace Recommendation Engine
+
+Introduction:
+This proposal outlines the development of a recommendation engine for an activity marketplace platform. The engine will enhance user experience by providing personalized activity suggestions, thereby differentiating the platform from competitors. The focus will be on creating a robust MVP (Minimum Viable Product) within a specified timeline.
+
+A. Project Details
+
+    1. Overview
+    - The recommendation engine will collect data from users and vendors to deliver tailored recommendations.
+    - MVP will include:
+        - User authentication
+        - Basic recommendation algorithm
+        - Modern UI/UX design
+
+    2. User Roles and Types
+    - User:
+        - Sign up and log in to access personalized recommendations
+        - View all vendors and activities on the marketplace
+        - Like activities for future reference
+        - Filter activities by location and category
+        - Add friends to share preferences and get group-based recommendations
+        - Contact vendors directly via WhatsApp
+        - View internal calendar for upcoming events and avoid scheduling conflicts
+    - Vendor:
+        - Input activity details and manage offerings
+        - View analytics on user interactions
+        - Be contacted by users via WhatsApp (contact button)
+
+B. Database Structure
+
+    1. User Information Fields
+        - User ID: Unique identifier for each user
+        - Username: Chosen name for user accounts
+        - Password: Encrypted password for account security
+        - Email: Contact email for notifications and account recovery
+        - Phone Number: For vendor to contact
+        - Profile Picture: Optional image to personalize user profiles
+        - Preferences: User-selected preferences for activities (e.g., types of activities, locations)
+        - Liked: Records of activities that the user has liked for future reference
+        - Friends List
+
+    2. Vendor Information Fields
+        - Vendor ID: Unique identifier for each vendor
+        - Vendor Name: Official name of the vendor or business
+        - Contact Information: Email and phone number for communication
+        - Profile Description: Brief overview of the vendor and their offerings
+        - Location: Physical address or geographical area of operation
+        - Rating: Average rating based on user feedback
+        - Services List
+
+    3. Activity/Service Information Fields
+        - Activity ID: Unique identifier for each activity
+        - Vendor ID: Reference to the vendor providing the activity
+        - Activity Name: Title of the activity
+        - Description: Detailed information about what the activity entails
+        - Category: Type of activity (e.g., adventure, relaxation, education)
+        - Duration: Length of the activity (e.g., 1 hour, half-day)
+        - Price: Cost per participant or group for the activity
+        - Capacity: Maximum number of participants allowed
+        - Location: Specific venue or area where the activity takes place
+        - Availability: Days and times when the activity is offered
+        - Images/Videos: Visual representations of the activity
+        - Quota: Maximum number of people who can sign up
+        - Discounts/Offers: Any promotional deals that may apply
+
+    4. Payment Information Fields
+        - Payment ID: Unique identifier for each transaction
+        - User ID: Linked to the user making the payment
+        - Vendor ID / Activity ID: Linked to the vendor and activity being paid for
+        - Amount: Total transaction amount
+        - Payment Status: (Pending, Completed, Failed, Refunded)
+        - Payment Method: (Credit Card, PayPal, etc.)
+        - Timestamp: Date and time of payment
+
+C. Internal Calendar Feature
+
+    - Calendar Display: Users will have an internal calendar to view events they have signed up for
+    - Event Management: The calendar will highlight upcoming activities and allow users to manage their signed-up events
+    - Recommendation Filter: When recommending new activities, the system will only suggest those that do not conflict with the user's existing calendar events, ensuring users are not double-booked
+    - Friend Optimization: User can add a friend(s) to their calendar to manually see what time they're mutually free
+
+D. Features
+
+    1. Recommendation Engine
+        - Basic recommendation system that leverages user behaviour and preferences
+        - Data collection mechanisms for user interactions and vendor offerings
+        - Ability to refine recommendations based on user engagement and calendar availability
+        - Supports friend-based recommendations to enhance group experience
+        - Includes filters by category and location
+
+    2. User Authentication
+        - Secure login and signup pages to facilitate user access
+        - User profile management for personalization
+
+    3. Vendor Communication
+        - Users can message vendors directly via WhatsApp
+
+    4. Social Integration
+        - Add friends to coordinate plans and receive better group activity suggestions
+
+    5. Analytics Dashboard
+        - Admin interface for monitoring user engagement and recommendation effectiveness
+        - Insights into user behaviour to refine the recommendation algorithm
+
+    6. Payment Integration
+        - Users can securely pay for activities directly through the platform
+        - Support for some main payment methods
+        - Payment confirmation stored in the backend
+        - Optional: auto-generate receipts and confirmation emails
+        - Vendors can view their earnings and transaction logs via the dashboard

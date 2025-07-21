@@ -1,0 +1,104 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum PaymentStatus {
+  PENDING
+  COMPLETED
+  FAILED
+  REFUNDED
+}
+
+enum PaymentMethod {
+  CREDIT_CARD
+  PAYPAL
+  OTHER
+}
+
+enum ActivityCategory {
+  ADVENTURE
+  RELAXATION
+  EDUCATION
+  SPORTS
+  MUSIC
+  ART
+  OTHER
+}
+
+model User {
+  id          String          @id @default(uuid())
+  username    String          @unique
+  email       String          @unique
+  password    String
+  phone       String?
+  avatar      String?
+  preferences Json?
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @updatedAt
+  liked       Activity[]      @relation("LikedActivities")
+  friends     User[]          @relation("UserFriends")
+  friendOf    User[]          @relation("UserFriends")
+  calendar    CalendarEvent[]
+  payments    Payment[]
+}
+
+model Vendor {
+  id          String     @id @default(uuid())
+  name        String
+  email       String     @unique
+  phone       String?
+  profileDesc String?
+  location    String?
+  rating      Float?     @default(0)
+  activities  Activity[]
+  payments    Payment[]
+}
+
+model Activity {
+  id             String           @id @default(uuid())
+  vendor         Vendor           @relation(fields: [vendorId], references: [id])
+  vendorId       String
+  name           String
+  description    String
+  category       ActivityCategory
+  duration       String?
+  price          Float
+  capacity       Int
+  location       String
+  availability   Json?
+  images         Json?
+  quota          Int?
+  discount       Float?           @default(0)
+  likedBy        User[]           @relation("LikedActivities")
+  calendarEvents CalendarEvent[]
+  Payment        Payment[]
+}
+
+model Payment {
+  id         String        @id @default(uuid())
+  user       User          @relation(fields: [userId], references: [id])
+  userId     String
+  vendor     Vendor        @relation(fields: [vendorId], references: [id])
+  vendorId   String
+  activity   Activity      @relation(fields: [activityId], references: [id])
+  activityId String
+  amount     Float
+  status     PaymentStatus
+  method     PaymentMethod
+  timestamp  DateTime      @default(now())
+}
+
+model CalendarEvent {
+  id         String   @id @default(uuid())
+  user       User     @relation(fields: [userId], references: [id])
+  userId     String
+  activity   Activity @relation(fields: [activityId], references: [id])
+  activityId String
+  startTime  DateTime
+  endTime    DateTime
+}
