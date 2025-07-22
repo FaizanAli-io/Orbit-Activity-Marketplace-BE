@@ -46,20 +46,22 @@ enum AuthRole {
 }
 
 model User {
-  id          String          @id @default(uuid())
-  name        String
-  phone       String?
-  avatar      String?
-  preferences Json?
-  createdAt   DateTime        @default(now())
-  updatedAt   DateTime        @updatedAt
-  friends     User[]          @relation("UserFriends")
-  friendOf    User[]          @relation("UserFriends")
-  liked       Activity[]      @relation("LikedActivities")
-  subscribed  Activity[]      @relation("SubscribedActivities")
-  calendar    CalendarEvent[]
-  payments    Payment[]
-  auth        Auth[]
+  id             String          @id @default(uuid())
+  name           String
+  phone          String?
+  avatar         String?
+  preferences    Json?
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
+  friends        User[]          @relation("UserFriends")
+  friendOf       User[]          @relation("UserFriends")
+  pendingFriends User[]          @relation("PendingFriends")
+  pendingFrom    User[]          @relation("PendingFriends")
+  liked          Activity[]      @relation("LikedActivities")
+  subscribed     Activity[]      @relation("SubscribedActivities")
+  calendar       CalendarEvent[]
+  payments       Payment[]
+  auth           Auth[]
 }
 
 model Vendor {

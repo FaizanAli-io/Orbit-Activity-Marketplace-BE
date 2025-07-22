@@ -1,7 +1,7 @@
 import {
   Get,
-  Post,
   Put,
+  Post,
   Delete,
   Body,
   Query,
@@ -9,6 +9,7 @@ import {
   UseGuards,
   Controller,
 } from '@nestjs/common';
+
 import {
   ApiTags,
   ApiBody,
@@ -18,11 +19,14 @@ import {
   ApiOperation,
   ApiBearerAuth,
 } from '@nestjs/swagger';
-import { ActivityService } from './activity.service';
-import { CreateActivityDto, UpdateActivityDto } from './dto';
+
 import { AuthGuard } from '../guards/auth.guard';
 import { Auth } from '../decorators/auth.decorator';
 import { AuthRole } from '../decorators/auth-role.decorator';
+
+import { ActivityService } from './activity.service';
+import { InteractionService } from './interaction.service';
+import { CreateActivityDto, UpdateActivityDto } from './dto';
 
 @ApiTags('Activities')
 @Controller('activities')
@@ -84,12 +88,18 @@ export class ActivityController {
   remove(@Param('id') id: string, @Auth() auth: any) {
     return this.activityService.remove(id, auth.vendorId);
   }
+}
+
+@ApiTags('Interactions')
+@Controller('activities')
+export class InteractionController {
+  constructor(private readonly interactionService: InteractionService) {}
 
   @Get(':id/likes')
   @ApiOperation({ summary: 'Get all users who liked an activity' })
   @ApiParam({ name: 'id', type: String })
   getActivityLikes(@Param('id') id: string) {
-    return this.activityService.getActivityLikes(id);
+    return this.interactionService.getActivityLikes(id);
   }
 
   @Post(':id/like')
@@ -99,7 +109,7 @@ export class ActivityController {
   @ApiOperation({ summary: 'Like an activity' })
   @ApiParam({ name: 'id', type: String })
   like(@Param('id') id: string, @Auth() auth: any) {
-    return this.activityService.like(id, auth.userId);
+    return this.interactionService.like(id, auth.userId);
   }
 
   @Delete(':id/unlike')
@@ -109,14 +119,14 @@ export class ActivityController {
   @ApiOperation({ summary: 'Remove like from an activity' })
   @ApiParam({ name: 'id', type: String })
   unlike(@Param('id') id: string, @Auth() auth: any) {
-    return this.activityService.unlike(id, auth.userId);
+    return this.interactionService.unlike(id, auth.userId);
   }
 
   @Get(':id/subscriptions')
   @ApiOperation({ summary: 'Get all users subscribed to an activity' })
   @ApiParam({ name: 'id', type: String })
   getActivitySubscriptions(@Param('id') id: string) {
-    return this.activityService.getActivitySubscriptions(id);
+    return this.interactionService.getActivitySubscriptions(id);
   }
 
   @Post(':id/subscribe')
@@ -126,7 +136,7 @@ export class ActivityController {
   @ApiOperation({ summary: 'User subscribes/signs up for an activity' })
   @ApiParam({ name: 'id', type: String })
   subscribe(@Param('id') id: string, @Auth() auth: any) {
-    return this.activityService.subscribe(id, auth.userId);
+    return this.interactionService.subscribe(id, auth.userId);
   }
 
   @Delete(':id/unsubscribe')
@@ -136,6 +146,6 @@ export class ActivityController {
   @ApiOperation({ summary: 'Cancel activity subscription' })
   @ApiParam({ name: 'id', type: String })
   unsubscribe(@Param('id') id: string, @Auth() auth: any) {
-    return this.activityService.unsubscribe(id, auth.userId);
+    return this.interactionService.unsubscribe(id, auth.userId);
   }
 }

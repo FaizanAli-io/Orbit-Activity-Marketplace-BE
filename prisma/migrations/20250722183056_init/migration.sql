@@ -115,6 +115,14 @@ CREATE TABLE "_UserFriends" (
 );
 
 -- CreateTable
+CREATE TABLE "_PendingFriends" (
+    "A" TEXT NOT NULL,
+    "B" TEXT NOT NULL,
+
+    CONSTRAINT "_PendingFriends_AB_pkey" PRIMARY KEY ("A","B")
+);
+
+-- CreateTable
 CREATE TABLE "_LikedActivities" (
     "A" TEXT NOT NULL,
     "B" TEXT NOT NULL,
@@ -141,6 +149,9 @@ CREATE UNIQUE INDEX "Auth_vendorId_key" ON "Auth"("vendorId");
 
 -- CreateIndex
 CREATE INDEX "_UserFriends_B_index" ON "_UserFriends"("B");
+
+-- CreateIndex
+CREATE INDEX "_PendingFriends_B_index" ON "_PendingFriends"("B");
 
 -- CreateIndex
 CREATE INDEX "_LikedActivities_B_index" ON "_LikedActivities"("B");
@@ -177,6 +188,12 @@ ALTER TABLE "_UserFriends" ADD CONSTRAINT "_UserFriends_A_fkey" FOREIGN KEY ("A"
 
 -- AddForeignKey
 ALTER TABLE "_UserFriends" ADD CONSTRAINT "_UserFriends_B_fkey" FOREIGN KEY ("B") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "_PendingFriends" ADD CONSTRAINT "_PendingFriends_A_fkey" FOREIGN KEY ("A") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "_PendingFriends" ADD CONSTRAINT "_PendingFriends_B_fkey" FOREIGN KEY ("B") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "_LikedActivities" ADD CONSTRAINT "_LikedActivities_A_fkey" FOREIGN KEY ("A") REFERENCES "Activity"("id") ON DELETE CASCADE ON UPDATE CASCADE;
