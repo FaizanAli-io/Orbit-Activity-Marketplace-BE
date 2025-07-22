@@ -40,6 +40,11 @@ enum AuthType {
   VENDOR
 }
 
+enum AuthRole {
+  USER
+  ADMIN
+}
+
 model User {
   id          String          @id @default(uuid())
   name        String
@@ -125,6 +130,7 @@ model Auth {
   passwordResetToken String?
   status             AuthStatus
   type               AuthType
+  role               AuthRole   @default(USER)
   userId             String?    @unique
   vendorId           String?    @unique
   user               User?      @relation(fields: [userId], references: [id])

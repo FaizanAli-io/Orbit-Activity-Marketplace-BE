@@ -1,0 +1,49 @@
+import {
+  Injectable,
+  CanActivate,
+  ExecutionContext,
+  ForbiddenException,
+  UnauthorizedException,
+} from '@nestjs/common';
+import { Reflector } from '@nestjs/core';
+import { PrismaClient } from '@prisma/client';
+import { AUTH_ROLE_KEY, AuthRoleType } from '../decorators/auth-role.decorator';
+
+@Injectable()
+export class AuthGuard implements CanActivate {
+  private prisma = new PrismaClient();
+
+  constructor(private reflector: Reflector) {}
+
+  async canActivate(context: ExecutionContext): Promise<boolean> {
+    const request = context.switchToHttp().getRequest();
+    const authHeader = request.headers['authorization'];
+
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      throw new UnauthorizedException(
+        'Missing or invalid Authorization header',
+      );
+    }
+
+    const token = authHeader.split(' ')[1];
+    const auth = await this.prisma.auth.findFirst({
+      where: { accessToken: token },
+    });
+
+    if (!auth) {
+      throw new UnauthorizedException('Invalid or expired token');
+    }
+
+    const requiredRole = this.reflector.get<AuthRoleType>(
+      AUTH_ROLE_KEY,
+      context.getHandler(),
+    );
+
+    if (requiredRole && auth.type !== requiredRole) {
+      throw new ForbiddenException('You do not have access to this resource');
+    }
+
+    request.user = auth;
+    return true;
+  }
+}

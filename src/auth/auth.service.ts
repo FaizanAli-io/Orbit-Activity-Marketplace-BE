@@ -6,7 +6,7 @@ import {
 import * as bcrypt from 'bcryptjs';
 import { v4 as uuidv4 } from 'uuid';
 import { SignupDto, LoginDto } from './dto';
-import { EmailService } from './email.service';
+import { EmailService } from '../email/email.service';
 import { AuthStatus, AuthType, PrismaClient } from '@prisma/client';
 
 @Injectable()
@@ -97,8 +97,23 @@ export class AuthService {
     return { message: 'Email verified successfully' };
   }
 
-  async getMe(user: any) {
-    // Implement get current user logic
-    return { message: 'Get current user endpoint' };
+  async getMe(auth: any) {
+    if (!auth) return { message: 'No user found' };
+
+    if (auth.type === 'USER' && auth.userId) {
+      const user = await this.prisma.user.findUnique({
+        where: { id: auth.userId },
+      });
+      return { type: 'USER', email: auth.email, user };
+    }
+
+    if (auth.type === 'VENDOR' && auth.vendorId) {
+      const vendor = await this.prisma.vendor.findUnique({
+        where: { id: auth.vendorId },
+      });
+      return { type: 'VENDOR', email: auth.email, vendor };
+    }
+
+    return { message: 'Invalid auth record' };
   }
 }

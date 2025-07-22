@@ -1,7 +1,15 @@
-import { Controller, Post, Body, Get, Req, Query } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiResponse, ApiBody } from '@nestjs/swagger';
-import { AuthService } from './auth.service';
+import { Controller, Post, Body, Get, Query, UseGuards } from '@nestjs/common';
+import {
+  ApiTags,
+  ApiBody,
+  ApiResponse,
+  ApiOperation,
+  ApiBearerAuth,
+} from '@nestjs/swagger';
 import { SignupDto, LoginDto } from './dto';
+import { AuthService } from './auth.service';
+import { AuthGuard } from '../guards/auth.guard';
+import { User } from '../decorators/user.decorator';
 
 @ApiTags('Auth')
 @Controller('auth')
@@ -32,9 +40,11 @@ export class AuthController {
   }
 
   @Get('me')
+  @UseGuards(AuthGuard)
+  @ApiBearerAuth('access-token')
   @ApiOperation({ summary: 'Get current logged-in user profile' })
   @ApiResponse({ status: 200, description: 'Current user profile.' })
-  getMe(@Req() req: any) {
-    return this.authService.getMe(req.user);
+  getMe(@User() user: any) {
+    return this.authService.getMe(user);
   }
 }
