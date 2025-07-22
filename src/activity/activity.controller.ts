@@ -21,7 +21,7 @@ import {
 import { ActivityService } from './activity.service';
 import { CreateActivityDto, UpdateActivityDto } from './dto';
 import { AuthGuard } from '../guards/auth.guard';
-import { User } from '../decorators/user.decorator';
+import { Auth } from '../decorators/auth.decorator';
 import { AuthRole } from '../decorators/auth-role.decorator';
 
 @ApiTags('Activities')
@@ -36,8 +36,8 @@ export class ActivityController {
   @ApiOperation({ summary: 'Create a new activity (vendor only)' })
   @ApiBody({ type: CreateActivityDto })
   @ApiResponse({ status: 201, description: 'Activity created.' })
-  create(@Body() dto: CreateActivityDto, @User() user: any) {
-    return this.activityService.create(dto, user.vendorId);
+  create(@Body() dto: CreateActivityDto, @Auth() auth: any) {
+    return this.activityService.create(dto, auth.vendorId);
   }
 
   @Get()
@@ -69,9 +69,9 @@ export class ActivityController {
   update(
     @Param('id') id: string,
     @Body() dto: UpdateActivityDto,
-    @User() user: any,
+    @Auth() auth: any,
   ) {
-    return this.activityService.update(id, dto, user.vendorId);
+    return this.activityService.update(id, dto, auth.vendorId);
   }
 
   @Delete(':id')
@@ -81,7 +81,61 @@ export class ActivityController {
   @ApiOperation({ summary: 'Delete activity (vendor only)' })
   @ApiParam({ name: 'id', type: String })
   @ApiResponse({ status: 200, description: 'Activity deleted.' })
-  remove(@Param('id') id: string, @User() user: any) {
-    return this.activityService.remove(id, user.vendorId);
+  remove(@Param('id') id: string, @Auth() auth: any) {
+    return this.activityService.remove(id, auth.vendorId);
+  }
+
+  @Get(':id/likes')
+  @ApiOperation({ summary: 'Get all users who liked an activity' })
+  @ApiParam({ name: 'id', type: String })
+  getActivityLikes(@Param('id') id: string) {
+    return this.activityService.getActivityLikes(id);
+  }
+
+  @Post(':id/like')
+  @UseGuards(AuthGuard)
+  @AuthRole('USER')
+  @ApiBearerAuth('access-token')
+  @ApiOperation({ summary: 'Like an activity' })
+  @ApiParam({ name: 'id', type: String })
+  like(@Param('id') id: string, @Auth() auth: any) {
+    return this.activityService.like(id, auth.userId);
+  }
+
+  @Delete(':id/unlike')
+  @UseGuards(AuthGuard)
+  @AuthRole('USER')
+  @ApiBearerAuth('access-token')
+  @ApiOperation({ summary: 'Remove like from an activity' })
+  @ApiParam({ name: 'id', type: String })
+  unlike(@Param('id') id: string, @Auth() auth: any) {
+    return this.activityService.unlike(id, auth.userId);
+  }
+
+  @Get(':id/subscriptions')
+  @ApiOperation({ summary: 'Get all users subscribed to an activity' })
+  @ApiParam({ name: 'id', type: String })
+  getActivitySubscriptions(@Param('id') id: string) {
+    return this.activityService.getActivitySubscriptions(id);
+  }
+
+  @Post(':id/subscribe')
+  @UseGuards(AuthGuard)
+  @AuthRole('USER')
+  @ApiBearerAuth('access-token')
+  @ApiOperation({ summary: 'User subscribes/signs up for an activity' })
+  @ApiParam({ name: 'id', type: String })
+  subscribe(@Param('id') id: string, @Auth() auth: any) {
+    return this.activityService.subscribe(id, auth.userId);
+  }
+
+  @Delete(':id/unsubscribe')
+  @UseGuards(AuthGuard)
+  @AuthRole('USER')
+  @ApiBearerAuth('access-token')
+  @ApiOperation({ summary: 'Cancel activity subscription' })
+  @ApiParam({ name: 'id', type: String })
+  unsubscribe(@Param('id') id: string, @Auth() auth: any) {
+    return this.activityService.unsubscribe(id, auth.userId);
   }
 }

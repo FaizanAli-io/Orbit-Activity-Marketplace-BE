@@ -9,7 +9,7 @@ import {
 import { SignupDto, LoginDto } from './dto';
 import { AuthService } from './auth.service';
 import { AuthGuard } from '../guards/auth.guard';
-import { User } from '../decorators/user.decorator';
+import { Auth } from '../decorators/auth.decorator';
 
 @ApiTags('Auth')
 @Controller('auth')
@@ -44,7 +44,7 @@ export class AuthController {
   @ApiBearerAuth('access-token')
   @ApiOperation({ summary: 'Get current logged-in user profile' })
   @ApiResponse({ status: 200, description: 'Current user profile.' })
-  getMe(@User() user: any) {
-    return this.authService.getMe(user);
+  getMe(@Auth() auth: any) {
+    return this.authService.getMe(auth);
   }
 }

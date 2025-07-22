@@ -10,6 +10,12 @@ CREATE TYPE "ActivityCategory" AS ENUM ('ADVENTURE', 'RELAXATION', 'EDUCATION', 
 -- CreateEnum
 CREATE TYPE "AuthStatus" AS ENUM ('PENDING', 'APPROVED');
 
+-- CreateEnum
+CREATE TYPE "AuthType" AS ENUM ('USER', 'VENDOR');
+
+-- CreateEnum
+CREATE TYPE "AuthRole" AS ENUM ('USER', 'ADMIN');
+
 -- CreateTable
 CREATE TABLE "User" (
     "id" TEXT NOT NULL,
@@ -31,6 +37,8 @@ CREATE TABLE "Vendor" (
     "profileDesc" TEXT,
     "location" TEXT,
     "rating" DOUBLE PRECISION DEFAULT 0,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
 
     CONSTRAINT "Vendor_pkey" PRIMARY KEY ("id")
 );
@@ -50,6 +58,8 @@ CREATE TABLE "Activity" (
     "images" JSONB,
     "quota" INTEGER,
     "discount" DOUBLE PRECISION DEFAULT 0,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
 
     CONSTRAINT "Activity_pkey" PRIMARY KEY ("id")
 );
@@ -84,8 +94,14 @@ CREATE TABLE "Auth" (
     "id" TEXT NOT NULL,
     "email" TEXT NOT NULL,
     "password" TEXT NOT NULL,
-    "token" TEXT,
+    "accessToken" TEXT,
+    "verificationToken" TEXT,
+    "passwordResetToken" TEXT,
     "status" "AuthStatus" NOT NULL,
+    "type" "AuthType" NOT NULL,
+    "role" "AuthRole" NOT NULL DEFAULT 'USER',
+    "userId" TEXT,
+    "vendorId" TEXT,
 
     CONSTRAINT "Auth_pkey" PRIMARY KEY ("id")
 );
@@ -106,14 +122,31 @@ CREATE TABLE "_LikedActivities" (
     CONSTRAINT "_LikedActivities_AB_pkey" PRIMARY KEY ("A","B")
 );
 
+-- CreateTable
+CREATE TABLE "_SubscribedActivities" (
+    "A" TEXT NOT NULL,
+    "B" TEXT NOT NULL,
+
+    CONSTRAINT "_SubscribedActivities_AB_pkey" PRIMARY KEY ("A","B")
+);
+
 -- CreateIndex
 CREATE UNIQUE INDEX "Auth_email_key" ON "Auth"("email");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "Auth_userId_key" ON "Auth"("userId");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "Auth_vendorId_key" ON "Auth"("vendorId");
 
 -- CreateIndex
 CREATE INDEX "_UserFriends_B_index" ON "_UserFriends"("B");
 
 -- CreateIndex
 CREATE INDEX "_LikedActivities_B_index" ON "_LikedActivities"("B");
+
+-- CreateIndex
+CREATE INDEX "_SubscribedActivities_B_index" ON "_SubscribedActivities"("B");
 
 -- AddForeignKey
 ALTER TABLE "Activity" ADD CONSTRAINT "Activity_vendorId_fkey" FOREIGN KEY ("vendorId") REFERENCES "Vendor"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
@@ -134,10 +167,10 @@ ALTER TABLE "CalendarEvent" ADD CONSTRAINT "CalendarEvent_userId_fkey" FOREIGN K
 ALTER TABLE "CalendarEvent" ADD CONSTRAINT "CalendarEvent_activityId_fkey" FOREIGN KEY ("activityId") REFERENCES "Activity"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "Auth" ADD CONSTRAINT "Auth_user_id_fkey" FOREIGN KEY ("id") REFERENCES "User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "Auth" ADD CONSTRAINT "Auth_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "Auth" ADD CONSTRAINT "Auth_vendor_id_fkey" FOREIGN KEY ("id") REFERENCES "Vendor"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "Auth" ADD CONSTRAINT "Auth_vendorId_fkey" FOREIGN KEY ("vendorId") REFERENCES "Vendor"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "_UserFriends" ADD CONSTRAINT "_UserFriends_A_fkey" FOREIGN KEY ("A") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
@@ -150,3 +183,9 @@ ALTER TABLE "_LikedActivities" ADD CONSTRAINT "_LikedActivities_A_fkey" FOREIGN 
 
 -- AddForeignKey
 ALTER TABLE "_LikedActivities" ADD CONSTRAINT "_LikedActivities_B_fkey" FOREIGN KEY ("B") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "_SubscribedActivities" ADD CONSTRAINT "_SubscribedActivities_A_fkey" FOREIGN KEY ("A") REFERENCES "Activity"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "_SubscribedActivities" ADD CONSTRAINT "_SubscribedActivities_B_fkey" FOREIGN KEY ("B") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;

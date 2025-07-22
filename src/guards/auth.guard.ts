@@ -43,7 +43,7 @@ export class AuthGuard implements CanActivate {
       throw new ForbiddenException('You do not have access to this resource');
     }
 
-    request.user = auth;
+    request.auth = auth;
     return true;
   }
 }

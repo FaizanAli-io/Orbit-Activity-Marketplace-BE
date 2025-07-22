@@ -25,7 +25,7 @@ export class AuthService {
     const hashed = await bcrypt.hash(password, 10);
     const verificationToken = uuidv4();
 
-    const isUser = type === 'user';
+    const isUser = type === 'USER';
 
     const entity = isUser
       ? await this.prisma.user.create({ data: { name } })

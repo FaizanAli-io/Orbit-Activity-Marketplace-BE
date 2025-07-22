@@ -1,30 +1,107 @@
 import { ActivityCategory } from '@prisma/client';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { IsString, IsNumber, IsEnum, IsOptional } from 'class-validator';
 
 export class CreateActivityDto {
-  @ApiProperty() name: string;
-  @ApiProperty() description: string;
-  @ApiProperty({ enum: ActivityCategory }) category: ActivityCategory;
-  @ApiProperty() price: number;
-  @ApiProperty() capacity: number;
-  @ApiProperty() location: string;
-  @ApiPropertyOptional() duration?: string;
-  @ApiPropertyOptional() availability?: any;
-  @ApiPropertyOptional() images?: any;
-  @ApiPropertyOptional() quota?: number;
-  @ApiPropertyOptional() discount?: number;
+  @ApiProperty()
+  @IsString()
+  name: string;
+
+  @ApiProperty()
+  @IsString()
+  description: string;
+
+  @ApiProperty({ enum: ActivityCategory })
+  @IsEnum(ActivityCategory)
+  category: ActivityCategory;
+
+  @ApiProperty()
+  @IsNumber()
+  price: number;
+
+  @ApiProperty()
+  @IsNumber()
+  capacity: number;
+
+  @ApiProperty()
+  @IsString()
+  location: string;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  duration?: string;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  availability?: any;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  images?: any;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsNumber()
+  quota?: number;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsNumber()
+  discount?: number;
 }
 
 export class UpdateActivityDto {
-  @ApiPropertyOptional() name?: string;
-  @ApiPropertyOptional() description?: string;
-  @ApiPropertyOptional({ enum: ActivityCategory }) category?: ActivityCategory;
-  @ApiPropertyOptional() price?: number;
-  @ApiPropertyOptional() capacity?: number;
-  @ApiPropertyOptional() location?: string;
-  @ApiPropertyOptional() duration?: string;
-  @ApiPropertyOptional() availability?: any;
-  @ApiPropertyOptional() images?: any;
-  @ApiPropertyOptional() quota?: number;
-  @ApiPropertyOptional() discount?: number;
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  name?: string;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  description?: string;
+
+  @ApiPropertyOptional({ enum: ActivityCategory })
+  @IsOptional()
+  @IsEnum(ActivityCategory)
+  category?: ActivityCategory;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsNumber()
+  price?: number;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsNumber()
+  capacity?: number;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  location?: string;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  duration?: string;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  availability?: any;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  images?: any;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsNumber()
+  quota?: number;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsNumber()
+  discount?: number;
 }

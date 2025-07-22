@@ -40,4 +40,20 @@ export class UserService {
   async deleteAuth(id: string): Promise<void> {
     await this.prisma.auth.deleteMany({ where: { userId: id } });
   }
+
+  async getLiked(id: string): Promise<any[]> {
+    const user = await this.prisma.user.findUnique({
+      where: { id },
+      include: { liked: true },
+    });
+    return user?.liked || [];
+  }
+
+  async getSubscriptions(id: string): Promise<any[]> {
+    const user = await this.prisma.user.findUnique({
+      where: { id },
+      include: { subscribed: true },
+    });
+    return user?.subscribed || [];
+  }
 }

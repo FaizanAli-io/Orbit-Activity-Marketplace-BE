@@ -53,9 +53,10 @@ model User {
   preferences Json?
   createdAt   DateTime        @default(now())
   updatedAt   DateTime        @updatedAt
-  liked       Activity[]      @relation("LikedActivities")
   friends     User[]          @relation("UserFriends")
   friendOf    User[]          @relation("UserFriends")
+  liked       Activity[]      @relation("LikedActivities")
+  subscribed  Activity[]      @relation("SubscribedActivities")
   calendar    CalendarEvent[]
   payments    Payment[]
   auth        Auth[]
@@ -93,6 +94,7 @@ model Activity {
   createdAt      DateTime         @default(now())
   updatedAt      DateTime         @updatedAt
   likedBy        User[]           @relation("LikedActivities")
+  subscribedBy   User[]           @relation("SubscribedActivities")
   calendarEvents CalendarEvent[]
   Payment        Payment[]
 }
