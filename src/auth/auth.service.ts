@@ -97,6 +97,37 @@ export class AuthService {
     return { message: 'Email verified successfully' };
   }
 
+  async requestPasswordReset(email: string) {
+    const auth = await this.prisma.auth.findUnique({ where: { email } });
+    if (!auth) throw new BadRequestException('No account with that email');
+
+    const token = uuidv4();
+    await this.prisma.auth.update({
+      where: { email },
+      data: { passwordResetToken: token },
+    });
+
+    await this.emailService.sendPasswordReset(email, token);
+    return { message: 'Password reset email sent' };
+  }
+
+  async resetPassword(token: string, newPassword: string) {
+    const auth = await this.prisma.auth.findFirst({
+      where: { passwordResetToken: token },
+    });
+    if (!auth) {
+      throw new BadRequestException('Invalid or expired token');
+    }
+
+    const hashed = await bcrypt.hash(newPassword, 10);
+    await this.prisma.auth.update({
+      where: { email: auth.email },
+      data: { password: hashed, passwordResetToken: null },
+    });
+
+    return { message: 'Password has been reset successfully' };
+  }
+
   async getMe(auth: any) {
     if (!auth) return { message: 'No user found' };
 

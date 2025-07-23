@@ -17,7 +17,7 @@ export class EmailService {
   }
 
   async sendVerification(email: string, token: string) {
-    const link = `http://localhost:3000/auth/verify-email?token=${token}`;
+    const link = `${process.env.FRONTEND_URL}/verify-email/${token}`;
     const mailOptions = {
       from: '"Orbit Marketplace" <no-reply@orbit.com>',
       subject: 'Verify your email address',
@@ -37,6 +37,33 @@ export class EmailService {
     } catch (error) {
       this.logger.error(
         `Failed to send verification email to ${email}`,
+        error.stack,
+      );
+      throw error;
+    }
+  }
+
+  async sendPasswordReset(email: string, token: string) {
+    const link = `${process.env.FRONTEND_URL}/reset-password/${token}`;
+    const mailOptions = {
+      from: '"Orbit Marketplace" <no-reply@orbit.com>',
+      subject: 'Reset your password',
+      to: email,
+      html: `
+        <h2>Password Reset Request</h2>
+        <p>You requested to reset your password. Click the link below to set a new password:</p>
+        <a href="${link}">${link}</a>
+        <p>If you did not request a password reset, you can ignore this email.</p>
+      `,
+    };
+
+    try {
+      await this.transporter.sendMail(mailOptions);
+      this.logger.log(`Password reset email sent to ${email}`);
+      return true;
+    } catch (error) {
+      this.logger.error(
+        `Failed to send password reset email to ${email}`,
         error.stack,
       );
       throw error;

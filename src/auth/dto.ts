@@ -30,3 +30,26 @@ export class LoginDto {
   @IsString()
   password: string;
 }
+
+export class VerifyEmailDto {
+  @ApiProperty()
+  @IsString()
+  token: string;
+}
+
+export class RequestResetDto {
+  @ApiProperty()
+  @IsEmail()
+  email: string;
+}
+
+export class ResetPasswordDto {
+  @ApiProperty()
+  @IsString()
+  token: string;
+
+  @ApiProperty()
+  @IsString()
+  @MinLength(6)
+  newPassword: string;
+}

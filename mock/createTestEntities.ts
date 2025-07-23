@@ -10,7 +10,7 @@ export async function createTestUser() {
   await prisma.auth.create({
     data: {
       password,
-      email: 'testuser@example.com',
+      email: 'testuser@mailinator.com',
       status: AuthStatus.APPROVED,
       type: AuthType.USER,
       role: AuthRole.USER,
@@ -20,7 +20,7 @@ export async function createTestUser() {
 
   const accessToken = uuidv4();
   await prisma.auth.update({
-    where: { email: 'testuser@example.com' },
+    where: { email: 'testuser@mailinator.com' },
     data: { accessToken },
   });
 
@@ -33,7 +33,7 @@ export async function createTestVendor() {
   await prisma.auth.create({
     data: {
       password,
-      email: 'testvendor@example.com',
+      email: 'testvendor@mailinator.com',
       status: AuthStatus.APPROVED,
       type: AuthType.VENDOR,
       role: AuthRole.USER,
@@ -43,7 +43,7 @@ export async function createTestVendor() {
 
   const accessToken = uuidv4();
   await prisma.auth.update({
-    where: { email: 'testvendor@example.com' },
+    where: { email: 'testvendor@mailinator.com' },
     data: { accessToken },
   });
 
@@ -71,7 +71,7 @@ export async function cleanupTestEntities() {
   await prisma.user.deleteMany({ where: { name: 'Test User' } });
   await prisma.auth.deleteMany({
     where: {
-      email: { in: ['testuser@example.com', 'testvendor@example.com'] },
+      email: { in: ['testuser@mailinator.com', 'testvendor@mailinator.com'] },
     },
   });
 }
