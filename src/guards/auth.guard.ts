@@ -34,9 +34,9 @@ export class AuthGuard implements CanActivate {
       throw new UnauthorizedException('Invalid or expired token');
     }
 
-    const requiredRole = this.reflector.get<AuthRoleType>(
+    const requiredRole = this.reflector.getAllAndOverride<AuthRoleType>(
       AUTH_ROLE_KEY,
-      context.getHandler(),
+      [context.getHandler(), context.getClass()],
     );
 
     if (requiredRole && auth.type !== requiredRole) {
