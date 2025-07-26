@@ -57,9 +57,7 @@ export class UserController {
     description: 'The user has been successfully deleted.',
   })
   async remove(@Param('id') id: string) {
-    await this.userService.remove(id);
-    await this.userService.deleteAuth(id);
-    return { message: 'User and auth deleted' };
+    return this.userService.remove(id);
   }
 
   @Get(':id/liked')

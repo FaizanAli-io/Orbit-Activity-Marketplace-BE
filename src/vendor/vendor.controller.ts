@@ -57,8 +57,6 @@ export class VendorController {
     description: 'The vendor has been successfully deleted.',
   })
   async remove(@Param('id') id: string) {
-    await this.vendorService.remove(id);
-    await this.vendorService.deleteAuth(id);
-    return { message: 'Vendor and auth deleted' };
+    return this.vendorService.remove(id);
   }
 }

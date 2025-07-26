@@ -33,11 +33,9 @@ export class VendorService {
     return this.prisma.vendor.update({ where: { id }, data });
   }
 
-  async remove(id: string): Promise<Vendor> {
-    return this.prisma.vendor.delete({ where: { id } });
-  }
-
-  async deleteAuth(id: string): Promise<void> {
-    await this.prisma.auth.delete({ where: { vendorId: id } });
+  async remove(id: string): Promise<{ message: string }> {
+    await this.prisma.auth.deleteMany({ where: { vendorId: id } });
+    await this.prisma.vendor.delete({ where: { id } });
+    return { message: 'Vendor and auth deleted' };
   }
 }

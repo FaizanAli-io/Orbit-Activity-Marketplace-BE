@@ -137,6 +137,6 @@ model Auth {
   role               AuthRole   @default(USER)
   userId             String?    @unique
   vendorId           String?    @unique
-  user               User?      @relation(fields: [userId], references: [id])
-  vendor             Vendor?    @relation(fields: [vendorId], references: [id])
+  user               User?      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  vendor             Vendor?    @relation(fields: [vendorId], references: [id], onDelete: Cascade)
 }

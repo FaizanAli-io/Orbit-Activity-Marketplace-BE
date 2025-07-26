@@ -33,12 +33,10 @@ export class UserService {
     return this.prisma.user.update({ where: { id }, data });
   }
 
-  async remove(id: string): Promise<User> {
-    return this.prisma.user.delete({ where: { id } });
-  }
-
-  async deleteAuth(id: string): Promise<void> {
-    await this.prisma.auth.delete({ where: { userId: id } });
+  async remove(id: string): Promise<{ message: string }> {
+    await this.prisma.auth.deleteMany({ where: { userId: id } });
+    await this.prisma.user.delete({ where: { id } });
+    return { message: 'User and auth deleted' };
   }
 
   async getLiked(id: string): Promise<any[]> {
