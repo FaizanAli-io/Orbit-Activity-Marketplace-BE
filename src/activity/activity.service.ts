@@ -3,17 +3,37 @@ import {
   NotFoundException,
   ForbiddenException,
 } from '@nestjs/common';
-import { CreateActivityDto, UpdateActivityDto } from './dto';
+import { CreateActivityDto, UpdateActivityDto } from './dtos';
 import { PrismaClient, ActivityCategory } from '@prisma/client';
 
 @Injectable()
 export class ActivityService {
   private prisma = new PrismaClient();
 
+  private convertDtoToPrismaData(
+    dto: CreateActivityDto | UpdateActivityDto,
+    vendorId?: string,
+  ) {
+    const data: any = { ...dto };
+
+    if (dto.availability) {
+      data.availability = JSON.parse(JSON.stringify(dto.availability));
+    }
+
+    if (dto.images) {
+      data.images = JSON.parse(JSON.stringify(dto.images));
+    }
+
+    if (vendorId) {
+      data.vendorId = vendorId;
+    }
+
+    return data;
+  }
+
   async create(createDto: CreateActivityDto, vendorId: string) {
-    return this.prisma.activity.create({
-      data: { ...createDto, vendorId },
-    });
+    const data = this.convertDtoToPrismaData(createDto, vendorId);
+    return this.prisma.activity.create({ data });
   }
 
   async findAll(filters: any) {
@@ -35,7 +55,9 @@ export class ActivityService {
     if (!activity) throw new NotFoundException('Activity not found');
     if (activity.vendorId !== vendorId)
       throw new ForbiddenException('You do not own this activity');
-    return this.prisma.activity.update({ where: { id }, data: updateDto });
+
+    const data = this.convertDtoToPrismaData(updateDto);
+    return this.prisma.activity.update({ where: { id }, data });
   }
 
   async remove(id: string, vendorId: string) {

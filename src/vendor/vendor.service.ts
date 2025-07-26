@@ -38,6 +38,6 @@ export class VendorService {
   }
 
   async deleteAuth(id: string): Promise<void> {
-    await this.prisma.auth.deleteMany({ where: { vendorId: id } });
+    await this.prisma.auth.delete({ where: { vendorId: id } });
   }
 }

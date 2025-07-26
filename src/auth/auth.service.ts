@@ -18,13 +18,10 @@ export class AuthService {
     const { email, password, name, type } = data;
 
     const existing = await this.prisma.auth.findUnique({ where: { email } });
-    if (existing) {
-      throw new BadRequestException('Email already in use');
-    }
+    if (existing) throw new BadRequestException('Email already in use');
 
     const hashed = await bcrypt.hash(password, 10);
     const verificationToken = uuidv4();
-
     const isUser = type === 'USER';
 
     const entity = isUser
@@ -37,12 +34,12 @@ export class AuthService {
 
     const authData = {
       email,
-      password: hashed,
-      verificationToken,
-      status: AuthStatus.PENDING,
       userId,
       vendorId,
       type: authType,
+      password: hashed,
+      verificationToken,
+      status: AuthStatus.PENDING,
     };
 
     await this.prisma.auth.create({ data: authData });

@@ -57,8 +57,17 @@ export async function createTestActivity(vendorId: string) {
       description: 'Fun activity',
       category: 'ADVENTURE',
       location: 'Test City',
-      capacity: 10,
-      price: 100,
+      duration: '1 hour',
+      capacity: 25,
+      price: 500,
+      images: {
+        video: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ',
+        thumbnail: 'https://via.placeholder.com/150',
+        images: [
+          'https://via.placeholder.com/150',
+          'https://via.placeholder.com/150',
+        ],
+      },
       vendorId,
     },
   });

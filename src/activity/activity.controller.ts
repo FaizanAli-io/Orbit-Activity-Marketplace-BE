@@ -26,7 +26,7 @@ import { AuthRole } from '../decorators/auth-role.decorator';
 
 import { ActivityService } from './activity.service';
 import { InteractionService } from './interaction.service';
-import { CreateActivityDto, UpdateActivityDto } from './dto';
+import { CreateActivityDto, UpdateActivityDto } from './dtos';
 
 @ApiTags('Activities')
 @Controller('activities')
