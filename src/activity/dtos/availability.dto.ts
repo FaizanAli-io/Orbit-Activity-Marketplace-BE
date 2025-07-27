@@ -4,45 +4,76 @@ import {
   Max,
   IsIn,
   IsArray,
-  IsString,
   IsNumber,
+  IsString,
   IsOptional,
   IsDateString,
   ValidateNested,
 } from 'class-validator';
 import { Type } from 'class-transformer';
 
-export class TimeSlotDto {
-  @ApiProperty({ description: 'Start time in HH:mm format' })
+class TimeSlotDto {
+  @ApiProperty({
+    description: 'Start time in HH:mm format',
+    example: '16:00',
+  })
   @IsString()
-  startTime: string;
+  start: string;
 
-  @ApiProperty({ description: 'End time in HH:mm format' })
+  @ApiProperty({
+    description: 'End time in HH:mm format',
+    example: '20:00',
+  })
   @IsString()
-  endTime: string;
+  end: string;
 }
 
-export class DateTimeRangeDto {
-  @ApiProperty({ description: 'Start datetime in ISO format' })
+class DateRangeDto {
+  @ApiProperty({
+    description: 'Start datetime in ISO format',
+    example: '2024-01-15T00:00:00Z',
+  })
   @IsDateString()
   start: string;
 
-  @ApiProperty({ description: 'End datetime in ISO format' })
+  @ApiProperty({
+    description: 'End datetime in ISO format',
+    example: '2024-01-20T23:59:59Z',
+  })
   @IsDateString()
   end: string;
 }
 
-export class DailyRecurringDto {
+class DateWithTimeDto {
+  @ApiProperty({
+    description: 'Date in ISO format',
+    example: '2024-01-15T00:00:00Z',
+  })
+  @IsDateString()
+  date: string;
+
   @ApiProperty({ type: TimeSlotDto })
   @ValidateNested()
   @Type(() => TimeSlotDto)
-  timeSlot: TimeSlotDto;
+  time: TimeSlotDto;
 }
 
-export class WeeklyRecurringDto {
+class DateTimeRangeDto {
+  @ApiProperty({ type: DateRangeDto })
+  @ValidateNested()
+  @Type(() => DateRangeDto)
+  date: DateRangeDto;
+
+  @ApiProperty({ type: TimeSlotDto })
+  @ValidateNested()
+  @Type(() => TimeSlotDto)
+  time: TimeSlotDto;
+}
+
+class WeeklyRecurringDto {
   @ApiProperty({
     type: [Number],
-    description: 'Day indexes: 0=Sunday, 1=Monday, ..., 6=Saturday',
+    description: 'Day indexes: 1=Monday, ..., 7=Sunday',
     example: [1, 3, 5], // Monday, Wednesday, Friday
   })
   @IsArray()
@@ -51,13 +82,18 @@ export class WeeklyRecurringDto {
   @Max(6, { each: true })
   days: number[];
 
+  @ApiProperty({ type: DateRangeDto })
+  @ValidateNested()
+  @Type(() => DateRangeDto)
+  date: DateRangeDto;
+
   @ApiProperty({ type: TimeSlotDto })
   @ValidateNested()
   @Type(() => TimeSlotDto)
-  timeSlot: TimeSlotDto;
+  time: TimeSlotDto;
 }
 
-export class MonthlyRecurringDto {
+class MonthlyRecurringDto {
   @ApiProperty({
     type: [Number],
     description: 'Day of month indexes: 1-31',
@@ -69,76 +105,69 @@ export class MonthlyRecurringDto {
   @Max(31, { each: true })
   days: number[];
 
+  @ApiProperty({ type: DateRangeDto })
+  @ValidateNested()
+  @Type(() => DateRangeDto)
+  date: DateRangeDto;
+
   @ApiProperty({ type: TimeSlotDto })
   @ValidateNested()
   @Type(() => TimeSlotDto)
-  timeSlot: TimeSlotDto;
+  time: TimeSlotDto;
 }
 
-export class RecurringDto {
+export class ActivityAvailabilityDto {
   @ApiProperty({
-    enum: ['daily', 'weekly', 'monthly'],
-    description: 'Type of recurring pattern',
+    enum: ['dates', 'range', 'weekly', 'monthly'],
+    description: 'Type of availability pattern',
   })
-  @IsIn(['daily', 'weekly', 'monthly'])
-  type: 'daily' | 'weekly' | 'monthly';
+  @IsIn(['dates', 'range', 'weekly', 'monthly'])
+  type: 'dates' | 'range' | 'weekly' | 'monthly';
 
-  @ApiPropertyOptional({ type: DailyRecurringDto })
+  @ApiPropertyOptional({
+    type: [DateWithTimeDto],
+    description: 'Specific dates with time slots for availability',
+  })
+  @IsArray()
+  @IsOptional()
+  @ValidateNested({ each: true })
+  @Type(() => DateWithTimeDto)
+  dates?: DateWithTimeDto[];
+
+  @ApiPropertyOptional({
+    type: DateTimeRangeDto,
+    description: 'Date/time range for availability',
+  })
   @IsOptional()
   @ValidateNested()
-  @Type(() => DailyRecurringDto)
-  daily?: DailyRecurringDto;
+  @Type(() => DateTimeRangeDto)
+  range?: DateTimeRangeDto;
 
-  @ApiPropertyOptional({ type: WeeklyRecurringDto })
+  @ApiPropertyOptional({
+    type: WeeklyRecurringDto,
+    description: 'Weekly recurring availability pattern',
+  })
   @IsOptional()
   @ValidateNested()
   @Type(() => WeeklyRecurringDto)
   weekly?: WeeklyRecurringDto;
 
-  @ApiPropertyOptional({ type: MonthlyRecurringDto })
+  @ApiPropertyOptional({
+    type: MonthlyRecurringDto,
+    description: 'Monthly recurring availability pattern',
+  })
   @IsOptional()
   @ValidateNested()
   @Type(() => MonthlyRecurringDto)
   monthly?: MonthlyRecurringDto;
-}
-
-export class ActivityAvailabilityDto {
-  @ApiPropertyOptional({
-    type: [String],
-    description: 'Specific dates for availability in ISO format',
-    example: ['2024-01-15T10:00:00Z', '2024-01-20T14:30:00Z'],
-  })
-  @IsOptional()
-  @IsArray()
-  @IsDateString({}, { each: true })
-  dates?: string[];
-
-  @ApiPropertyOptional({
-    type: [DateTimeRangeDto],
-    description: 'Date/time ranges for availability',
-  })
-  @IsOptional()
-  @IsArray()
-  @ValidateNested({ each: true })
-  @Type(() => DateTimeRangeDto)
-  ranges?: DateTimeRangeDto[];
-
-  @ApiPropertyOptional({
-    type: RecurringDto,
-    description: 'Recurring availability pattern',
-  })
-  @IsOptional()
-  @ValidateNested()
-  @Type(() => RecurringDto)
-  recurring?: RecurringDto;
 
   @ApiPropertyOptional({
     type: [String],
     description: 'Exclusions from availability in ISO format',
     example: ['2024-01-25T10:00:00Z'],
   })
-  @IsOptional()
   @IsArray()
+  @IsOptional()
   @IsDateString({}, { each: true })
   exclusions?: string[];
 }

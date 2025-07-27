@@ -1,4 +1,4 @@
-import { AuthType } from '@prisma/client';
+import { AuthRole } from '@prisma/client';
 import { ApiProperty } from '@nestjs/swagger';
 import { IsEmail, IsString, MinLength, IsEnum } from 'class-validator';
 
@@ -16,9 +16,9 @@ export class SignupDto {
   @MinLength(6)
   password: string;
 
-  @ApiProperty({ enum: AuthType })
-  @IsEnum(AuthType)
-  type: AuthType;
+  @ApiProperty({ enum: AuthRole })
+  @IsEnum(AuthRole)
+  type: AuthRole;
 }
 
 export class LoginDto {

@@ -30,16 +30,14 @@ export class AuthGuard implements CanActivate {
       where: { accessToken: token },
     });
 
-    if (!auth) {
-      throw new UnauthorizedException('Invalid or expired token');
-    }
+    if (!auth) throw new UnauthorizedException('Invalid or expired token');
 
     const requiredRole = this.reflector.getAllAndOverride<AuthRoleType>(
       AUTH_ROLE_KEY,
       [context.getHandler(), context.getClass()],
     );
 
-    if (requiredRole && auth.type !== requiredRole) {
+    if (requiredRole && auth.role !== requiredRole) {
       throw new ForbiddenException('You do not have access to this resource');
     }
 

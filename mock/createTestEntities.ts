@@ -1,6 +1,6 @@
-import { PrismaClient, AuthStatus, AuthType, AuthRole } from '@prisma/client';
 import * as bcrypt from 'bcryptjs';
 import { v4 as uuidv4 } from 'uuid';
+import { PrismaClient, AuthRole } from '@prisma/client';
 
 const prisma = new PrismaClient();
 
@@ -10,11 +10,10 @@ export async function createTestUser() {
   await prisma.auth.create({
     data: {
       password,
-      email: 'testuser@mailinator.com',
-      status: AuthStatus.APPROVED,
-      type: AuthType.USER,
-      role: AuthRole.USER,
+      verified: true,
       userId: user.id,
+      role: AuthRole.USER,
+      email: 'testuser@mailinator.com',
     },
   });
 
@@ -33,11 +32,10 @@ export async function createTestVendor() {
   await prisma.auth.create({
     data: {
       password,
-      email: 'testvendor@mailinator.com',
-      status: AuthStatus.APPROVED,
-      type: AuthType.VENDOR,
-      role: AuthRole.USER,
+      verified: true,
       vendorId: vendor.id,
+      role: AuthRole.USER,
+      email: 'testvendor@mailinator.com',
     },
   });
 

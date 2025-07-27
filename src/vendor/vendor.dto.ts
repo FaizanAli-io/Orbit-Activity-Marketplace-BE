@@ -12,15 +12,15 @@ export class UpdateVendorDto {
   @IsString()
   phone?: string;
 
-  @ApiPropertyOptional({ description: 'Vendor profile description' })
-  @IsOptional()
-  @IsString()
-  profileDesc?: string;
-
   @ApiPropertyOptional({ description: 'Vendor location' })
   @IsOptional()
   @IsString()
   location?: string;
+
+  @ApiPropertyOptional({ description: 'Vendor description' })
+  @IsOptional()
+  @IsString()
+  description?: string;
 
   @ApiPropertyOptional({ description: 'Vendor rating' })
   @IsOptional()

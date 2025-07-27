@@ -7,19 +7,6 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-enum PaymentStatus {
-  PENDING
-  COMPLETED
-  FAILED
-  REFUNDED
-}
-
-enum PaymentMethod {
-  CREDIT_CARD
-  PAYPAL
-  OTHER
-}
-
 enum ActivityCategory {
   ADVENTURE
   RELAXATION
@@ -30,19 +17,24 @@ enum ActivityCategory {
   OTHER
 }
 
-enum AuthStatus {
+enum PaymentStatus {
   PENDING
-  APPROVED
+  COMPLETED
+  REFUNDED
+  FAILED
 }
 
-enum AuthType {
-  USER
-  VENDOR
+enum PaymentMethod {
+  CREDIT_CARD
+  PAYPAL
+  CASH
+  OTHER
 }
 
 enum AuthRole {
   USER
-  ADMIN
+  VENDOR
+  SUPERUSER
 }
 
 model User {
@@ -126,17 +118,16 @@ model Payment {
 }
 
 model Auth {
-  id                 String     @id @default(uuid())
-  email              String     @unique
+  id                 String   @id @default(uuid())
+  email              String   @unique
   password           String
-  accessToken        String?
-  verificationToken  String?
-  passwordResetToken String?
-  status             AuthStatus
-  type               AuthType
-  role               AuthRole   @default(USER)
-  userId             String?    @unique
-  vendorId           String?    @unique
-  user               User?      @relation(fields: [userId], references: [id], onDelete: Cascade)
-  vendor             Vendor?    @relation(fields: [vendorId], references: [id], onDelete: Cascade)
+  verified           Boolean  @default(false)
+  role               AuthRole
+  accessToken        String?  @unique
+  verificationToken  String?  @unique
+  passwordResetToken String?  @unique
+  userId             String?  @unique
+  vendorId           String?  @unique
+  user               User?    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  vendor             Vendor?  @relation(fields: [vendorId], references: [id], onDelete: Cascade)
 }

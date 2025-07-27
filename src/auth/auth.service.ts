@@ -7,7 +7,7 @@ import * as bcrypt from 'bcryptjs';
 import { v4 as uuidv4 } from 'uuid';
 import { SignupDto, LoginDto } from './dto';
 import { EmailService } from '../email/email.service';
-import { AuthStatus, AuthType, PrismaClient } from '@prisma/client';
+import { AuthRole, PrismaClient } from '@prisma/client';
 
 @Injectable()
 export class AuthService {
@@ -28,18 +28,17 @@ export class AuthService {
       ? await this.prisma.user.create({ data: { name } })
       : await this.prisma.vendor.create({ data: { name } });
 
-    const [authType, userId, vendorId] = isUser
-      ? [AuthType.USER, entity.id, null]
-      : [AuthType.VENDOR, null, entity.id];
+    const [authRole, userId, vendorId] = isUser
+      ? [AuthRole.USER, entity.id, null]
+      : [AuthRole.VENDOR, null, entity.id];
 
     const authData = {
       email,
       userId,
       vendorId,
-      type: authType,
+      role: authRole,
       password: hashed,
       verificationToken,
-      status: AuthStatus.PENDING,
     };
 
     await this.prisma.auth.create({ data: authData });
@@ -52,27 +51,21 @@ export class AuthService {
     const { email, password } = data;
 
     const auth = await this.prisma.auth.findUnique({ where: { email } });
-    if (!auth) {
-      throw new UnauthorizedException('Invalid credentials');
-    }
+    if (!auth) throw new UnauthorizedException('Invalid credentials');
 
     const valid = await bcrypt.compare(password, auth.password);
-    if (!valid) {
-      throw new UnauthorizedException('Invalid credentials');
-    }
+    if (!valid) throw new UnauthorizedException('Invalid credentials');
 
-    if (auth.status !== AuthStatus.APPROVED) {
-      throw new UnauthorizedException('Email not verified');
-    }
+    if (!auth.verified) throw new UnauthorizedException('Email not verified');
 
     const accessToken = uuidv4();
     await this.prisma.auth.update({ where: { email }, data: { accessToken } });
 
     return {
       accessToken,
-      type: auth['type'],
-      userId: auth['userId'],
-      vendorId: auth['vendorId'],
+      role: auth.role,
+      userId: auth.userId,
+      vendorId: auth.vendorId,
     };
   }
 
@@ -83,12 +76,11 @@ export class AuthService {
 
     if (!auth) throw new BadRequestException('Invalid or expired token');
 
-    if (auth.status === AuthStatus.APPROVED)
-      return { message: 'Already verified' };
+    if (auth.verified) return { message: 'Already verified' };
 
     await this.prisma.auth.update({
       where: { email: auth.email },
-      data: { status: AuthStatus.APPROVED, verificationToken: null },
+      data: { verified: true },
     });
 
     return { message: 'Email verified successfully' };

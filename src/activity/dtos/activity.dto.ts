@@ -2,20 +2,20 @@ import { ActivityCategory } from '@prisma/client';
 import { PartialType } from '@nestjs/mapped-types';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import {
-  IsString,
-  IsNumber,
-  IsEnum,
-  IsOptional,
-  IsPositive,
   Min,
   Max,
+  IsEnum,
+  IsNumber,
+  IsString,
+  IsOptional,
+  IsPositive,
   ValidateNested,
 } from 'class-validator';
 import { Type } from 'class-transformer';
-import { ActivityAvailabilityDto } from './availability.dto';
 import { ActivityImagesDto } from './images.dto';
+import { ActivityAvailabilityDto } from './availability.dto';
 
-export class BaseActivityDto {
+class BaseActivityDto {
   @ApiProperty()
   @IsString()
   name: string;
