@@ -1,12 +1,4 @@
-import {
-  Controller,
-  Get,
-  Post,
-  Body,
-  Param,
-  Put,
-  Delete,
-} from '@nestjs/common';
+import { Controller, Get, Patch, Body, Param, Delete } from '@nestjs/common';
 import {
   ApiTags,
   ApiOperation,
@@ -14,7 +6,7 @@ import {
   ApiBody,
   ApiParam,
 } from '@nestjs/swagger';
-import { Prisma } from '@prisma/client';
+import { UpdateVendorDto } from './vendor.dto';
 import { VendorService } from './vendor.service';
 
 @ApiTags('Vendors')
@@ -37,15 +29,15 @@ export class VendorController {
     return this.vendorService.findOne(id);
   }
 
-  @Put(':id')
+  @Patch(':id')
   @ApiOperation({ summary: 'Update vendor by id' })
   @ApiParam({ name: 'id', type: String })
-  @ApiBody({ type: Object })
+  @ApiBody({ type: UpdateVendorDto })
   @ApiResponse({
     status: 200,
     description: 'The vendor has been successfully updated.',
   })
-  update(@Param('id') id: string, @Body() data: Prisma.VendorUpdateInput) {
+  update(@Param('id') id: string, @Body() data: UpdateVendorDto) {
     return this.vendorService.update(id, data);
   }
 

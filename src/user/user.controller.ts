@@ -1,20 +1,12 @@
-import {
-  Controller,
-  Get,
-  Post,
-  Body,
-  Param,
-  Delete,
-  Put,
-} from '@nestjs/common';
+import { Controller, Get, Patch, Body, Param, Delete } from '@nestjs/common';
 import {
   ApiTags,
-  ApiOperation,
-  ApiResponse,
   ApiBody,
   ApiParam,
+  ApiResponse,
+  ApiOperation,
 } from '@nestjs/swagger';
-import { Prisma } from '@prisma/client';
+import { UpdateUserDto } from './user.dto';
 import { UserService } from './user.service';
 
 @ApiTags('Users')
@@ -37,15 +29,15 @@ export class UserController {
     return this.userService.findOne(id);
   }
 
-  @Put(':id')
+  @Patch(':id')
   @ApiOperation({ summary: 'Update user by id' })
   @ApiParam({ name: 'id', type: String })
-  @ApiBody({ type: Object })
+  @ApiBody({ type: UpdateUserDto })
   @ApiResponse({
     status: 200,
     description: 'The user has been successfully updated.',
   })
-  update(@Param('id') id: string, @Body() data: Prisma.UserUpdateInput) {
+  update(@Param('id') id: string, @Body() data: UpdateUserDto) {
     return this.userService.update(id, data);
   }
 

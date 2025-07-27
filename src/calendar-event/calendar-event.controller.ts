@@ -1,7 +1,7 @@
 import {
   Get,
-  Put,
   Post,
+  Patch,
   Delete,
   Body,
   Param,
@@ -57,7 +57,7 @@ export class CalendarEventController {
     return this.calendarEventService.findOne(id, auth.userId);
   }
 
-  @Put(':id')
+  @Patch(':id')
   @ApiOperation({ summary: 'Update a calendar event by ID' })
   @ApiParam({ name: 'id', type: String })
   @ApiResponse({ status: 200, description: 'The updated calendar event.' })

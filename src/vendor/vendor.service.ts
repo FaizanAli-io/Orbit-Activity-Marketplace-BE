@@ -1,13 +1,10 @@
 import { Injectable } from '@nestjs/common';
-import { PrismaClient, Vendor, Prisma } from '@prisma/client';
+import { UpdateVendorDto } from './vendor.dto';
+import { PrismaClient, Vendor } from '@prisma/client';
 
 @Injectable()
 export class VendorService {
   private prisma = new PrismaClient();
-
-  async create(data: Prisma.VendorCreateInput): Promise<Vendor> {
-    return this.prisma.vendor.create({ data });
-  }
 
   async findAll(): Promise<any[]> {
     return this.prisma.vendor
@@ -29,8 +26,11 @@ export class VendorService {
     return { ...v, email: auth[0]?.email };
   }
 
-  async update(id: string, data: Prisma.VendorUpdateInput): Promise<Vendor> {
-    return this.prisma.vendor.update({ where: { id }, data });
+  async update(id: string, data: UpdateVendorDto): Promise<Vendor> {
+    return this.prisma.vendor.update({
+      where: { id },
+      data,
+    });
   }
 
   async remove(id: string): Promise<{ message: string }> {

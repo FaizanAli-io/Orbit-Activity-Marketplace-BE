@@ -1,7 +1,7 @@
 import {
   Get,
-  Put,
   Post,
+  Patch,
   Delete,
   Body,
   Query,
@@ -62,7 +62,7 @@ export class ActivityController {
     return this.activityService.findOne(id);
   }
 
-  @Put(':id')
+  @Patch(':id')
   @UseGuards(AuthGuard)
   @AuthRole('VENDOR')
   @ApiBearerAuth('access-token')
