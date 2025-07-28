@@ -77,20 +77,4 @@ export class ActivityService {
     await this.prisma.activity.delete({ where: { id } });
     return { message: 'Activity deleted' };
   }
-
-  async getCategories() {
-    const categories = await this.prisma.category.findMany({
-      include: { children: { select: { id: true, name: true } } },
-      where: { parentId: null },
-    });
-
-    return categories.map((category) => ({
-      id: category.id,
-      name: category.name,
-      subcategories: category.children.map((child) => ({
-        id: child.id,
-        name: child.name,
-      })),
-    }));
-  }
 }

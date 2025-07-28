@@ -6,6 +6,7 @@ import { AuthModule } from './auth/auth.module';
 import { UserModule } from './user/user.module';
 import { VendorModule } from './vendor/vendor.module';
 import { ActivityModule } from './activity/activity.module';
+import { CategoryModule } from './category/category.module';
 import { CalendarEventModule } from './calendar-event/calendar-event.module';
 
 @Module({
@@ -14,6 +15,7 @@ import { CalendarEventModule } from './calendar-event/calendar-event.module';
     UserModule,
     VendorModule,
     ActivityModule,
+    CategoryModule,
     CalendarEventModule,
     ConfigModule.forRoot({ isGlobal: true }),
   ],
