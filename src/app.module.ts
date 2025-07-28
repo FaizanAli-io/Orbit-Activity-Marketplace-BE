@@ -5,6 +5,7 @@ import { AppController } from './app.controller';
 import { AuthModule } from './auth/auth.module';
 import { UserModule } from './user/user.module';
 import { VendorModule } from './vendor/vendor.module';
+import { PaymentModule } from './payment/payment.module';
 import { ActivityModule } from './activity/activity.module';
 import { CategoryModule } from './category/category.module';
 import { CalendarEventModule } from './calendar-event/calendar-event.module';
@@ -14,6 +15,7 @@ import { CalendarEventModule } from './calendar-event/calendar-event.module';
     AuthModule,
     UserModule,
     VendorModule,
+    PaymentModule,
     ActivityModule,
     CategoryModule,
     CalendarEventModule,

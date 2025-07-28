@@ -5,7 +5,6 @@ import {
   Delete,
   Body,
   Param,
-  UseGuards,
   Controller,
 } from '@nestjs/common';
 import {

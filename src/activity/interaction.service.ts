@@ -1,9 +1,9 @@
 import { Injectable } from '@nestjs/common';
-import { PrismaClient } from '@prisma/client';
+import { PrismaService } from '../prisma/prisma.service';
 
 @Injectable()
 export class InteractionService {
-  private prisma = new PrismaClient();
+  constructor(private prisma: PrismaService) {}
 
   async getActivityLikes(activityId: number): Promise<any[]> {
     const activity = await this.prisma.activity.findUnique({

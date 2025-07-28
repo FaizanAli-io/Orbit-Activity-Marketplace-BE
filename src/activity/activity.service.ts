@@ -3,12 +3,12 @@ import {
   NotFoundException,
   ForbiddenException,
 } from '@nestjs/common';
+import { PrismaService } from '../prisma/prisma.service';
 import { CreateActivityDto, UpdateActivityDto } from './dtos';
-import { PrismaClient } from '@prisma/client';
 
 @Injectable()
 export class ActivityService {
-  private prisma = new PrismaClient();
+  constructor(private prisma: PrismaService) {}
 
   private convertDtoToPrismaData(
     dto: CreateActivityDto | UpdateActivityDto,

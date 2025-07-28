@@ -3,11 +3,11 @@ import {
   NotFoundException,
   BadRequestException,
 } from '@nestjs/common';
-import { PrismaClient } from '@prisma/client';
+import { PrismaService } from '../prisma/prisma.service';
 
 @Injectable()
 export class SocialService {
-  private prisma = new PrismaClient();
+  constructor(private prisma: PrismaService) {}
 
   // List friend requests received by the user
   async listFriendRequests(userId: number) {

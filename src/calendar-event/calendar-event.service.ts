@@ -1,10 +1,11 @@
-import { PrismaClient, CalendarEvent } from '@prisma/client';
+import { CalendarEvent } from '@prisma/client';
+import { PrismaService } from '../prisma/prisma.service';
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { CreateCalendarEventDto, UpdateCalendarEventDto } from './dto';
 
 @Injectable()
 export class CalendarEventService {
-  private prisma = new PrismaClient();
+  constructor(private prisma: PrismaService) {}
 
   async create(
     dto: CreateCalendarEventDto,

@@ -3,12 +3,12 @@ import {
   NotFoundException,
   ConflictException,
 } from '@nestjs/common';
-import { PrismaClient } from '@prisma/client';
+import { PrismaService } from '../prisma/prisma.service';
 import { CreateCategoryDto, UpdateCategoryDto } from './dto';
 
 @Injectable()
 export class CategoryService {
-  private prisma = new PrismaClient();
+  constructor(private prisma: PrismaService) {}
 
   async getCategories() {
     const categories = await this.prisma.category.findMany({

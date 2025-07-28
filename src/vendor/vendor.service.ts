@@ -1,10 +1,11 @@
+import { Vendor } from '@prisma/client';
 import { Injectable } from '@nestjs/common';
 import { UpdateVendorDto } from './vendor.dto';
-import { PrismaClient, Vendor } from '@prisma/client';
+import { PrismaService } from '../prisma/prisma.service';
 
 @Injectable()
 export class VendorService {
-  private prisma = new PrismaClient();
+  constructor(private prisma: PrismaService) {}
 
   async findAll(): Promise<any[]> {
     return this.prisma.vendor

@@ -5,14 +5,17 @@ import {
 } from '@nestjs/common';
 import * as bcrypt from 'bcryptjs';
 import { v4 as uuidv4 } from 'uuid';
+import { AuthRole } from '@prisma/client';
 import { SignupDto, LoginDto } from './dto';
 import { EmailService } from '../email/email.service';
-import { AuthRole, PrismaClient } from '@prisma/client';
+import { PrismaService } from '../prisma/prisma.service';
 
 @Injectable()
 export class AuthService {
-  private prisma = new PrismaClient();
-  constructor(private readonly emailService: EmailService) {}
+  constructor(
+    private prisma: PrismaService,
+    private readonly emailService: EmailService,
+  ) {}
 
   async signup(data: SignupDto) {
     const { email, password, name, type } = data;

@@ -1,3 +1,4 @@
+import { PartialType } from '@nestjs/mapped-types';
 import { IsNumber, IsDateString, IsNotEmpty } from 'class-validator';
 
 export class CreateCalendarEventDto {
@@ -12,10 +13,6 @@ export class CreateCalendarEventDto {
   endTime: string;
 }
 
-export class UpdateCalendarEventDto {
-  @IsDateString()
-  startTime?: string;
-
-  @IsDateString()
-  endTime?: string;
-}
+export class UpdateCalendarEventDto extends PartialType(
+  CreateCalendarEventDto,
+) {}

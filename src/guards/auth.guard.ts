@@ -6,14 +6,15 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
-import { PrismaClient } from '@prisma/client';
+import { PrismaService } from '../prisma/prisma.service';
 import { AUTH_ROLE_KEY, AuthRoleType } from '../decorators/auth-role.decorator';
 
 @Injectable()
 export class AuthGuard implements CanActivate {
-  private prisma = new PrismaClient();
-
-  constructor(private reflector: Reflector) {}
+  constructor(
+    private prisma: PrismaService,
+    private reflector: Reflector,
+  ) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const request = context.switchToHttp().getRequest();
