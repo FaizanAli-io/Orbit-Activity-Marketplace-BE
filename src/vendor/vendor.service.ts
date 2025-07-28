@@ -16,7 +16,7 @@ export class VendorService {
       );
   }
 
-  async findOne(id: string): Promise<any | null> {
+  async findOne(id: number): Promise<any | null> {
     const vendor = await this.prisma.vendor.findUnique({
       where: { id },
       include: { auth: { select: { email: true } } },
@@ -26,14 +26,14 @@ export class VendorService {
     return { ...v, email: auth[0]?.email };
   }
 
-  async update(id: string, data: UpdateVendorDto): Promise<Vendor> {
+  async update(id: number, data: UpdateVendorDto): Promise<Vendor> {
     return this.prisma.vendor.update({
       where: { id },
       data,
     });
   }
 
-  async remove(id: string): Promise<{ message: string }> {
+  async remove(id: number): Promise<{ message: string }> {
     await this.prisma.auth.deleteMany({ where: { vendorId: id } });
     await this.prisma.vendor.delete({ where: { id } });
     return { message: 'Vendor and auth deleted' };

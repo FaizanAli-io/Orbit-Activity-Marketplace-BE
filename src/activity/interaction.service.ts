@@ -5,7 +5,7 @@ import { PrismaClient } from '@prisma/client';
 export class InteractionService {
   private prisma = new PrismaClient();
 
-  async getActivityLikes(activityId: string): Promise<any[]> {
+  async getActivityLikes(activityId: number): Promise<any[]> {
     const activity = await this.prisma.activity.findUnique({
       where: { id: activityId },
       include: { likedBy: true },
@@ -13,21 +13,21 @@ export class InteractionService {
     return activity?.likedBy || [];
   }
 
-  async like(activityId: string, userId: string) {
+  async like(activityId: number, userId: number) {
     return this.prisma.user.update({
       where: { id: userId },
       data: { liked: { connect: { id: activityId } } },
     });
   }
 
-  async unlike(activityId: string, userId: string) {
+  async unlike(activityId: number, userId: number) {
     return this.prisma.user.update({
       where: { id: userId },
       data: { liked: { disconnect: { id: activityId } } },
     });
   }
 
-  async getActivitySubscriptions(activityId: string): Promise<any[]> {
+  async getActivitySubscriptions(activityId: number): Promise<any[]> {
     const activity = await this.prisma.activity.findUnique({
       where: { id: activityId },
       include: { subscribedBy: true },
@@ -35,14 +35,14 @@ export class InteractionService {
     return activity?.subscribedBy || [];
   }
 
-  async subscribe(activityId: string, userId: string) {
+  async subscribe(activityId: number, userId: number) {
     return this.prisma.user.update({
       where: { id: userId },
       data: { subscribed: { connect: { id: activityId } } },
     });
   }
 
-  async unsubscribe(activityId: string, userId: string) {
+  async unsubscribe(activityId: number, userId: number) {
     return this.prisma.user.update({
       where: { id: userId },
       data: { subscribed: { disconnect: { id: activityId } } },

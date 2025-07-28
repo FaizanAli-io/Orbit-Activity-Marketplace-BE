@@ -1,10 +1,8 @@
-import { ActivityCategory } from '@prisma/client';
 import { PartialType } from '@nestjs/mapped-types';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import {
   Min,
   Max,
-  IsEnum,
   IsNumber,
   IsString,
   IsOptional,
@@ -24,9 +22,10 @@ class BaseActivityDto {
   @IsString()
   description: string;
 
-  @ApiProperty({ enum: ActivityCategory })
-  @IsEnum(ActivityCategory)
-  category: ActivityCategory;
+  @ApiProperty({ description: 'Category ID' })
+  @IsNumber()
+  @IsPositive()
+  categoryId: number;
 
   @ApiProperty()
   @IsNumber()

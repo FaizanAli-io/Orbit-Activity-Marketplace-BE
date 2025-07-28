@@ -46,9 +46,9 @@ export class ActivityController {
 
   @Get()
   @ApiOperation({ summary: 'Get all activities (with filters)' })
-  @ApiQuery({ name: 'category', required: false })
   @ApiQuery({ name: 'location', required: false })
   @ApiQuery({ name: 'vendorId', required: false })
+  @ApiQuery({ name: 'category', required: false })
   @ApiResponse({ status: 200, description: 'Return all activities.' })
   findAll(@Query() query: any) {
     return this.activityService.findAll(query);
@@ -56,9 +56,9 @@ export class ActivityController {
 
   @Get(':id')
   @ApiOperation({ summary: 'Get single activity detail' })
-  @ApiParam({ name: 'id', type: String })
+  @ApiParam({ name: 'id', type: Number })
   @ApiResponse({ status: 200, description: 'Return activity by id.' })
-  findOne(@Param('id') id: string) {
+  findOne(@Param('id') id: number) {
     return this.activityService.findOne(id);
   }
 
@@ -67,11 +67,11 @@ export class ActivityController {
   @AuthRole('VENDOR')
   @ApiBearerAuth('access-token')
   @ApiOperation({ summary: 'Update activity info (vendor only)' })
-  @ApiParam({ name: 'id', type: String })
+  @ApiParam({ name: 'id', type: Number })
   @ApiBody({ type: UpdateActivityDto })
   @ApiResponse({ status: 200, description: 'Activity updated.' })
   update(
-    @Param('id') id: string,
+    @Param('id') id: number,
     @Body() dto: UpdateActivityDto,
     @Auth() auth: any,
   ) {
@@ -83,10 +83,20 @@ export class ActivityController {
   @AuthRole('VENDOR')
   @ApiBearerAuth('access-token')
   @ApiOperation({ summary: 'Delete activity (vendor only)' })
-  @ApiParam({ name: 'id', type: String })
+  @ApiParam({ name: 'id', type: Number })
   @ApiResponse({ status: 200, description: 'Activity deleted.' })
-  remove(@Param('id') id: string, @Auth() auth: any) {
+  remove(@Param('id') id: number, @Auth() auth: any) {
     return this.activityService.remove(id, auth.vendorId);
+  }
+
+  @Get('categories')
+  @ApiOperation({ summary: 'Get all categories with subcategories' })
+  @ApiResponse({
+    status: 200,
+    description: 'Return all categories with their subcategories and IDs.',
+  })
+  getCategories() {
+    return this.activityService.getCategories();
   }
 }
 
@@ -97,8 +107,8 @@ export class InteractionController {
 
   @Get(':id/likes')
   @ApiOperation({ summary: 'Get all users who liked an activity' })
-  @ApiParam({ name: 'id', type: String })
-  getActivityLikes(@Param('id') id: string) {
+  @ApiParam({ name: 'id', type: Number })
+  getActivityLikes(@Param('id') id: number) {
     return this.interactionService.getActivityLikes(id);
   }
 
@@ -107,8 +117,8 @@ export class InteractionController {
   @AuthRole('USER')
   @ApiBearerAuth('access-token')
   @ApiOperation({ summary: 'Like an activity' })
-  @ApiParam({ name: 'id', type: String })
-  like(@Param('id') id: string, @Auth() auth: any) {
+  @ApiParam({ name: 'id', type: Number })
+  like(@Param('id') id: number, @Auth() auth: any) {
     return this.interactionService.like(id, auth.userId);
   }
 
@@ -117,15 +127,15 @@ export class InteractionController {
   @AuthRole('USER')
   @ApiBearerAuth('access-token')
   @ApiOperation({ summary: 'Remove like from an activity' })
-  @ApiParam({ name: 'id', type: String })
-  unlike(@Param('id') id: string, @Auth() auth: any) {
+  @ApiParam({ name: 'id', type: Number })
+  unlike(@Param('id') id: number, @Auth() auth: any) {
     return this.interactionService.unlike(id, auth.userId);
   }
 
   @Get(':id/subscriptions')
   @ApiOperation({ summary: 'Get all users subscribed to an activity' })
-  @ApiParam({ name: 'id', type: String })
-  getActivitySubscriptions(@Param('id') id: string) {
+  @ApiParam({ name: 'id', type: Number })
+  getActivitySubscriptions(@Param('id') id: number) {
     return this.interactionService.getActivitySubscriptions(id);
   }
 
@@ -134,8 +144,8 @@ export class InteractionController {
   @AuthRole('USER')
   @ApiBearerAuth('access-token')
   @ApiOperation({ summary: 'User subscribes/signs up for an activity' })
-  @ApiParam({ name: 'id', type: String })
-  subscribe(@Param('id') id: string, @Auth() auth: any) {
+  @ApiParam({ name: 'id', type: Number })
+  subscribe(@Param('id') id: number, @Auth() auth: any) {
     return this.interactionService.subscribe(id, auth.userId);
   }
 
@@ -144,8 +154,8 @@ export class InteractionController {
   @AuthRole('USER')
   @ApiBearerAuth('access-token')
   @ApiOperation({ summary: 'Cancel activity subscription' })
-  @ApiParam({ name: 'id', type: String })
-  unsubscribe(@Param('id') id: string, @Auth() auth: any) {
+  @ApiParam({ name: 'id', type: Number })
+  unsubscribe(@Param('id') id: number, @Auth() auth: any) {
     return this.interactionService.unsubscribe(id, auth.userId);
   }
 }

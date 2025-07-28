@@ -50,20 +50,20 @@ export class CalendarEventController {
 
   @Get(':id')
   @ApiOperation({ summary: 'Get a specific calendar event by ID' })
-  @ApiParam({ name: 'id', type: String })
+  @ApiParam({ name: 'id', type: Number })
   @ApiResponse({ status: 200, description: 'The requested calendar event.' })
   @ApiResponse({ status: 404, description: 'Event not found.' })
-  async findOne(@Param('id') id: string, @Auth() auth: any) {
+  async findOne(@Param('id') id: number, @Auth() auth: any) {
     return this.calendarEventService.findOne(id, auth.userId);
   }
 
   @Patch(':id')
   @ApiOperation({ summary: 'Update a calendar event by ID' })
-  @ApiParam({ name: 'id', type: String })
+  @ApiParam({ name: 'id', type: Number })
   @ApiResponse({ status: 200, description: 'The updated calendar event.' })
   @ApiResponse({ status: 404, description: 'Event not found.' })
   async update(
-    @Param('id') id: string,
+    @Param('id') id: number,
     @Body() dto: UpdateCalendarEventDto,
     @Auth() auth: any,
   ) {
@@ -72,10 +72,10 @@ export class CalendarEventController {
 
   @Delete(':id')
   @ApiOperation({ summary: 'Delete a calendar event by ID' })
-  @ApiParam({ name: 'id', type: String })
+  @ApiParam({ name: 'id', type: Number })
   @ApiResponse({ status: 200, description: 'The deleted calendar event.' })
   @ApiResponse({ status: 404, description: 'Event not found.' })
-  async remove(@Param('id') id: string, @Auth() auth: any) {
+  async remove(@Param('id') id: number, @Auth() auth: any) {
     return this.calendarEventService.remove(id, auth.userId);
   }
 }

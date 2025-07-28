@@ -16,7 +16,7 @@ export class UserService {
       );
   }
 
-  async findOne(id: string): Promise<any | null> {
+  async findOne(id: number): Promise<any | null> {
     const user = await this.prisma.user.findUnique({
       where: { id },
       include: { auth: { select: { email: true } } },
@@ -26,20 +26,20 @@ export class UserService {
     return { ...u, email: auth[0]?.email };
   }
 
-  async update(id: string, data: UpdateUserDto): Promise<User> {
+  async update(id: number, data: UpdateUserDto): Promise<User> {
     return this.prisma.user.update({
       where: { id },
       data,
     });
   }
 
-  async remove(id: string): Promise<{ message: string }> {
+  async remove(id: number): Promise<{ message: string }> {
     await this.prisma.auth.deleteMany({ where: { userId: id } });
     await this.prisma.user.delete({ where: { id } });
     return { message: 'User and auth deleted' };
   }
 
-  async getLiked(id: string): Promise<any[]> {
+  async getLiked(id: number): Promise<any[]> {
     const user = await this.prisma.user.findUnique({
       where: { id },
       include: { liked: true },
@@ -47,7 +47,7 @@ export class UserService {
     return user?.liked || [];
   }
 
-  async getSubscriptions(id: string): Promise<any[]> {
+  async getSubscriptions(id: number): Promise<any[]> {
     const user = await this.prisma.user.findUnique({
       where: { id },
       include: { subscribed: true },

@@ -1,0 +1,63 @@
+{
+  "categories": [
+    {
+      "name": "Food & Drink",
+      "subcategories": [
+        "Cafe",
+        "Food Tour",
+        "Cooking Class",
+        "Local Restaurant",
+        "Wine / Beer Tasting",
+        "Pop-Up Dining Experience",
+        "Other"
+      ]
+    },
+    {
+      "name": "Games & Recreation",
+      "subcategories": [
+        "Bowling",
+        "Mini Golf",
+        "Escape Room",
+        "Arcade / VR Games",
+        "Other"
+      ]
+    },
+    {
+      "name": "Fitness & Wellness",
+      "subcategories": [
+        "Fitness Class",
+        "Spa / Massage",
+        "Yoga / Pilates",
+        "Wellness Retreat",
+        "Meditation / Mindfulness",
+        "Other"
+      ]
+    },
+    {
+      "name": "Entertainment & Events",
+      "subcategories": [
+        "Festival",
+        "Comedy Show",
+        "Movie Night",
+        "Nightlife / Clubbing",
+        "Concert / Live Music",
+        "Other"
+      ]
+    },
+    {
+      "name": "Learning & DIY",
+      "subcategories": [
+        "Workshop",
+        "Book Club",
+        "Language Class",
+        "Tech / Coding Bootcamp",
+        "Personal Development Seminar",
+        "Other"
+      ]
+    },
+    {
+      "name": "Leisure & Others",
+      "subcategories": ["Other"]
+    }
+  ]
+}

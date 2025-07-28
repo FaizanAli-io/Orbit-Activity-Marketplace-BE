@@ -23,32 +23,32 @@ export class VendorController {
 
   @Get(':id')
   @ApiOperation({ summary: 'Get vendor by id' })
-  @ApiParam({ name: 'id', type: String })
+  @ApiParam({ name: 'id', type: Number })
   @ApiResponse({ status: 200, description: 'Return vendor by id.' })
-  findOne(@Param('id') id: string) {
+  findOne(@Param('id') id: number) {
     return this.vendorService.findOne(id);
   }
 
   @Patch(':id')
   @ApiOperation({ summary: 'Update vendor by id' })
-  @ApiParam({ name: 'id', type: String })
+  @ApiParam({ name: 'id', type: Number })
   @ApiBody({ type: UpdateVendorDto })
   @ApiResponse({
     status: 200,
     description: 'The vendor has been successfully updated.',
   })
-  update(@Param('id') id: string, @Body() data: UpdateVendorDto) {
+  update(@Param('id') id: number, @Body() data: UpdateVendorDto) {
     return this.vendorService.update(id, data);
   }
 
   @Delete(':id')
   @ApiOperation({ summary: 'Delete vendor by id' })
-  @ApiParam({ name: 'id', type: String })
+  @ApiParam({ name: 'id', type: Number })
   @ApiResponse({
     status: 200,
     description: 'The vendor has been successfully deleted.',
   })
-  async remove(@Param('id') id: string) {
+  async remove(@Param('id') id: number) {
     return this.vendorService.remove(id);
   }
 }

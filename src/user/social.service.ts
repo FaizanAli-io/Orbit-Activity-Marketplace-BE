@@ -10,7 +10,7 @@ export class SocialService {
   private prisma = new PrismaClient();
 
   // List friend requests received by the user
-  async listFriendRequests(userId: string) {
+  async listFriendRequests(userId: number) {
     const user = await this.prisma.user.findUnique({
       where: { id: userId },
       include: { pendingFrom: true },
@@ -19,7 +19,7 @@ export class SocialService {
   }
 
   // Send a friend request
-  async sendFriendRequest(fromId: string, toId: string) {
+  async sendFriendRequest(fromId: number, toId: number) {
     if (fromId === toId)
       throw new BadRequestException('Cannot friend yourself');
     // Check if already friends or pending
@@ -41,7 +41,7 @@ export class SocialService {
   }
 
   // Accept a friend request
-  async acceptFriendRequest(userId: string, fromId: string) {
+  async acceptFriendRequest(userId: number, fromId: number) {
     // Remove from pendingFrom
     await this.prisma.user.update({
       where: { id: userId },
@@ -60,7 +60,7 @@ export class SocialService {
   }
 
   // Decline a friend request
-  async declineFriendRequest(userId: string, fromId: string) {
+  async declineFriendRequest(userId: number, fromId: number) {
     await this.prisma.user.update({
       where: { id: userId },
       data: { pendingFrom: { disconnect: { id: fromId } } },
@@ -69,7 +69,7 @@ export class SocialService {
   }
 
   // List friends
-  async listFriends(userId: string) {
+  async listFriends(userId: number) {
     const user = await this.prisma.user.findUnique({
       where: { id: userId },
       include: { friends: true },
@@ -78,7 +78,7 @@ export class SocialService {
   }
 
   // Remove friend
-  async removeFriend(userId: string, friendId: string) {
+  async removeFriend(userId: number, friendId: number) {
     await this.prisma.user.update({
       where: { id: userId },
       data: { friends: { disconnect: { id: friendId } } },

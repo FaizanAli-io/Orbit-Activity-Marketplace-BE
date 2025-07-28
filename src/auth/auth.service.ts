@@ -76,7 +76,7 @@ export class AuthService {
 
     if (!auth) throw new BadRequestException('Invalid or expired token');
 
-    if (auth.verified) return { message: 'Already verified' };
+    if (auth.verified) return { message: 'Email already verified' };
 
     await this.prisma.auth.update({
       where: { email: auth.email },
@@ -120,18 +120,18 @@ export class AuthService {
   async getMe(auth: any) {
     if (!auth) return { message: 'No user found' };
 
-    if (auth.type === 'USER' && auth.userId) {
+    if (auth.role === 'USER' && auth.userId) {
       const user = await this.prisma.user.findUnique({
         where: { id: auth.userId },
       });
-      return { type: 'USER', email: auth.email, user };
+      return { role: 'USER', email: auth.email, user };
     }
 
-    if (auth.type === 'VENDOR' && auth.vendorId) {
+    if (auth.role === 'VENDOR' && auth.vendorId) {
       const vendor = await this.prisma.vendor.findUnique({
         where: { id: auth.vendorId },
       });
-      return { type: 'VENDOR', email: auth.email, vendor };
+      return { role: 'VENDOR', email: auth.email, vendor };
     }
 
     return { message: 'Invalid auth record' };

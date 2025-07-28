@@ -1,9 +1,9 @@
-import { IsString, IsDateString, IsNotEmpty } from 'class-validator';
+import { IsNumber, IsDateString, IsNotEmpty } from 'class-validator';
 
 export class CreateCalendarEventDto {
-  @IsString()
+  @IsNumber()
   @IsNotEmpty()
-  activityId: string;
+  activityId: number;
 
   @IsDateString()
   startTime: string;

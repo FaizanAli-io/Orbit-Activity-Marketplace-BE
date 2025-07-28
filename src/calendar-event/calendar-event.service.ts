@@ -8,18 +8,18 @@ export class CalendarEventService {
 
   async create(
     dto: CreateCalendarEventDto,
-    userId: string,
+    userId: number,
   ): Promise<CalendarEvent> {
     return this.prisma.calendarEvent.create({
       data: { ...dto, userId },
     });
   }
 
-  async findAll(userId: string): Promise<CalendarEvent[]> {
+  async findAll(userId: number): Promise<CalendarEvent[]> {
     return this.prisma.calendarEvent.findMany({ where: { userId } });
   }
 
-  async findOne(id: string, userId: string): Promise<CalendarEvent> {
+  async findOne(id: number, userId: number): Promise<CalendarEvent> {
     const event = await this.prisma.calendarEvent.findUnique({ where: { id } });
     if (!event || event.userId !== userId)
       throw new NotFoundException('Event not found');
@@ -27,9 +27,9 @@ export class CalendarEventService {
   }
 
   async update(
-    id: string,
+    id: number,
     dto: UpdateCalendarEventDto,
-    userId: string,
+    userId: number,
   ): Promise<CalendarEvent> {
     const event = await this.prisma.calendarEvent.findUnique({ where: { id } });
     if (!event || event.userId !== userId)
@@ -37,7 +37,7 @@ export class CalendarEventService {
     return this.prisma.calendarEvent.update({ where: { id }, data: dto });
   }
 
-  async remove(id: string, userId: string): Promise<CalendarEvent> {
+  async remove(id: number, userId: number): Promise<CalendarEvent> {
     const event = await this.prisma.calendarEvent.findUnique({ where: { id } });
     if (!event || event.userId !== userId)
       throw new NotFoundException('Event not found');

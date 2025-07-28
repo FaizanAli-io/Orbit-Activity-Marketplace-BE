@@ -23,54 +23,54 @@ export class UserController {
 
   @Get(':id')
   @ApiOperation({ summary: 'Get user by id' })
-  @ApiParam({ name: 'id', type: String })
+  @ApiParam({ name: 'id', type: Number })
   @ApiResponse({ status: 200, description: 'Return user by id.' })
-  findOne(@Param('id') id: string) {
+  findOne(@Param('id') id: number) {
     return this.userService.findOne(id);
   }
 
   @Patch(':id')
   @ApiOperation({ summary: 'Update user by id' })
-  @ApiParam({ name: 'id', type: String })
+  @ApiParam({ name: 'id', type: Number })
   @ApiBody({ type: UpdateUserDto })
   @ApiResponse({
     status: 200,
     description: 'The user has been successfully updated.',
   })
-  update(@Param('id') id: string, @Body() data: UpdateUserDto) {
+  update(@Param('id') id: number, @Body() data: UpdateUserDto) {
     return this.userService.update(id, data);
   }
 
   @Delete(':id')
   @ApiOperation({ summary: 'Delete user by id' })
-  @ApiParam({ name: 'id', type: String })
+  @ApiParam({ name: 'id', type: Number })
   @ApiResponse({
     status: 200,
     description: 'The user has been successfully deleted.',
   })
-  async remove(@Param('id') id: string) {
+  async remove(@Param('id') id: number) {
     return this.userService.remove(id);
   }
 
   @Get(':id/liked')
   @ApiOperation({ summary: 'Get all liked activities for a user' })
-  @ApiParam({ name: 'id', type: String })
+  @ApiParam({ name: 'id', type: Number })
   @ApiResponse({
     status: 200,
     description: 'Return all liked activities for user.',
   })
-  getLiked(@Param('id') id: string) {
+  getLiked(@Param('id') id: number) {
     return this.userService.getLiked(id);
   }
 
   @Get(':id/subscriptions')
   @ApiOperation({ summary: 'Get all signed-up activities for a user' })
-  @ApiParam({ name: 'id', type: String })
+  @ApiParam({ name: 'id', type: Number })
   @ApiResponse({
     status: 200,
     description: 'Return all subscribed activities for user.',
   })
-  getSubscriptions(@Param('id') id: string) {
+  getSubscriptions(@Param('id') id: number) {
     return this.userService.getSubscriptions(id);
   }
 }

@@ -33,22 +33,22 @@ export class SocialController {
 
   @Post('friend-requests/:friendId')
   @ApiOperation({ summary: 'Send a friend request' })
-  @ApiParam({ name: 'friendId', type: String })
-  sendFriendRequest(@Param('friendId') friendId: string, @Auth() auth: any) {
+  @ApiParam({ name: 'friendId', type: Number })
+  sendFriendRequest(@Param('friendId') friendId: number, @Auth() auth: any) {
     return this.socialService.sendFriendRequest(auth.userId, friendId);
   }
 
   @Post('friend-requests/:friendId/accept')
   @ApiOperation({ summary: 'Accept a friend request' })
-  @ApiParam({ name: 'friendId', type: String })
-  acceptFriendRequest(@Param('friendId') friendId: string, @Auth() auth: any) {
+  @ApiParam({ name: 'friendId', type: Number })
+  acceptFriendRequest(@Param('friendId') friendId: number, @Auth() auth: any) {
     return this.socialService.acceptFriendRequest(auth.userId, friendId);
   }
 
   @Post('friend-requests/:friendId/decline')
   @ApiOperation({ summary: 'Decline a friend request' })
-  @ApiParam({ name: 'friendId', type: String })
-  declineFriendRequest(@Param('friendId') friendId: string, @Auth() auth: any) {
+  @ApiParam({ name: 'friendId', type: Number })
+  declineFriendRequest(@Param('friendId') friendId: number, @Auth() auth: any) {
     return this.socialService.declineFriendRequest(auth.userId, friendId);
   }
 
@@ -60,8 +60,8 @@ export class SocialController {
 
   @Delete('friends/:friendId')
   @ApiOperation({ summary: 'Remove friend' })
-  @ApiParam({ name: 'friendId', type: String })
-  removeFriend(@Param('friendId') friendId: string, @Auth() auth: any) {
+  @ApiParam({ name: 'friendId', type: Number })
+  removeFriend(@Param('friendId') friendId: number, @Auth() auth: any) {
     return this.socialService.removeFriend(auth.userId, friendId);
   }
 }

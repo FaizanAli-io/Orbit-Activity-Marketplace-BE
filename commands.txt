@@ -1,7 +1,12 @@
 ssh -i orbit.pem ubuntu@3.26.1.132
+
 cd /home/ubuntu/Orbit-Activity-Marketplace-BE
 
 git pull
+
 npm install
+npx prisma generate
+
 npm run build
+
 pm2 restart orbit-api

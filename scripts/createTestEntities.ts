@@ -48,12 +48,20 @@ export async function createTestVendor() {
   return { vendor, accessToken };
 }
 
-export async function createTestActivity(vendorId: string) {
+export async function createTestActivity(vendorId: number) {
+  // Get the first category for testing
+  const category = await prisma.category.findFirst();
+  if (!category) {
+    throw new Error(
+      'No categories found. Please run populate:categories first.',
+    );
+  }
+
   const activity = await prisma.activity.create({
     data: {
       name: 'Test Activity',
       description: 'Fun activity',
-      category: 'ADVENTURE',
+      categoryId: category.id,
       location: 'Test City',
       duration: '1 hour',
       capacity: 25,
