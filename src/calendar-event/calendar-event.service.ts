@@ -22,8 +22,10 @@ export class CalendarEventService {
 
   async findOne(id: number, userId: number): Promise<CalendarEvent> {
     const event = await this.prisma.calendarEvent.findUnique({ where: { id } });
+
     if (!event || event.userId !== userId)
       throw new NotFoundException('Event not found');
+
     return event;
   }
 
@@ -32,16 +34,12 @@ export class CalendarEventService {
     dto: UpdateCalendarEventDto,
     userId: number,
   ): Promise<CalendarEvent> {
-    const event = await this.prisma.calendarEvent.findUnique({ where: { id } });
-    if (!event || event.userId !== userId)
-      throw new NotFoundException('Event not found');
+    await this.findOne(id, userId);
     return this.prisma.calendarEvent.update({ where: { id }, data: dto });
   }
 
   async remove(id: number, userId: number): Promise<CalendarEvent> {
-    const event = await this.prisma.calendarEvent.findUnique({ where: { id } });
-    if (!event || event.userId !== userId)
-      throw new NotFoundException('Event not found');
+    await this.findOne(id, userId);
     return this.prisma.calendarEvent.delete({ where: { id } });
   }
 }

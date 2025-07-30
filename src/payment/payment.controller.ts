@@ -5,53 +5,73 @@ import {
   Delete,
   Body,
   Param,
+  UseGuards,
   Controller,
   ParseIntPipe,
 } from '@nestjs/common';
-import { ApiTags, ApiResponse, ApiOperation } from '@nestjs/swagger';
-import { PaymentService } from './payment.service';
+import {
+  ApiTags,
+  ApiParam,
+  ApiResponse,
+  ApiOperation,
+  ApiBearerAuth,
+} from '@nestjs/swagger';
+import { AuthGuard } from '../guards/auth.guard';
+import { Auth } from '../decorators/auth.decorator';
+import { AuthRole } from '../decorators/auth-role.decorator';
 import { CreatePaymentDto, UpdatePaymentDto } from './dto';
+import { PaymentService } from './payment.service';
 
 @ApiTags('Payments')
 @Controller('payments')
+@UseGuards(AuthGuard)
+@AuthRole('USER')
+@ApiBearerAuth('access-token')
 export class PaymentController {
   constructor(private readonly paymentService: PaymentService) {}
 
   @Post()
   @ApiOperation({ summary: 'Create a payment' })
   @ApiResponse({ status: 201, description: 'Payment created successfully' })
-  create(@Body() dto: CreatePaymentDto) {
-    return this.paymentService.create(dto);
+  async create(@Body() dto: CreatePaymentDto, @Auth() auth: any) {
+    return this.paymentService.create(dto, auth.userId);
   }
 
   @Get()
-  @ApiOperation({ summary: 'Get all payments' })
+  @ApiOperation({ summary: 'Get all payments for the authenticated user' })
   @ApiResponse({ status: 200 })
-  findAll() {
-    return this.paymentService.findAll();
+  async findAll(@Auth() auth: any) {
+    return this.paymentService.findAll(auth.userId);
   }
 
   @Get(':id')
-  @ApiOperation({ summary: 'Get payment by ID' })
+  @ApiOperation({ summary: 'Get payment by ID for the authenticated user' })
+  @ApiParam({ name: 'id', type: Number })
   @ApiResponse({ status: 200 })
   @ApiResponse({ status: 404, description: 'Payment not found' })
-  findOne(@Param('id', ParseIntPipe) id: number) {
-    return this.paymentService.findOne(id);
+  async findOne(@Param('id', ParseIntPipe) id: number, @Auth() auth: any) {
+    return this.paymentService.findOne(id, auth.userId);
   }
 
   @Patch(':id')
-  @ApiOperation({ summary: 'Update payment by ID' })
+  @ApiOperation({ summary: 'Update payment by ID for the authenticated user' })
+  @ApiParam({ name: 'id', type: Number })
   @ApiResponse({ status: 200, description: 'Payment updated successfully' })
   @ApiResponse({ status: 404, description: 'Payment not found' })
-  update(@Param('id', ParseIntPipe) id: number, @Body() dto: UpdatePaymentDto) {
-    return this.paymentService.update(id, dto);
+  async update(
+    @Param('id', ParseIntPipe) id: number,
+    @Body() dto: UpdatePaymentDto,
+    @Auth() auth: any,
+  ) {
+    return this.paymentService.update(id, dto, auth.userId);
   }
 
   @Delete(':id')
-  @ApiOperation({ summary: 'Delete payment by ID' })
+  @ApiOperation({ summary: 'Delete payment by ID for the authenticated user' })
+  @ApiParam({ name: 'id', type: Number })
   @ApiResponse({ status: 200, description: 'Payment deleted successfully' })
   @ApiResponse({ status: 404, description: 'Payment not found' })
-  remove(@Param('id', ParseIntPipe) id: number) {
-    return this.paymentService.remove(id);
+  async remove(@Param('id', ParseIntPipe) id: number, @Auth() auth: any) {
+    return this.paymentService.remove(id, auth.userId);
   }
 }
