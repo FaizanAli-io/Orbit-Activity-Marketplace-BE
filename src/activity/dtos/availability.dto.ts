@@ -1,8 +1,8 @@
-import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import {
   Min,
   Max,
   IsIn,
+  Matches,
   IsArray,
   IsNumber,
   IsString,
@@ -11,13 +11,19 @@ import {
   ValidateNested,
 } from 'class-validator';
 import { Type } from 'class-transformer';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 
-class TimeSlotDto {
+const TIME_FORMAT_REGEX = /^([01]\d|2[0-3]):([0-5]\d)$/;
+
+export class TimeSlotDto {
   @ApiProperty({
     description: 'Start time in HH:mm format',
     example: '16:00',
   })
   @IsString()
+  @Matches(TIME_FORMAT_REGEX, {
+    message: 'start must be in HH:mm format',
+  })
   start: string;
 
   @ApiProperty({
@@ -25,10 +31,13 @@ class TimeSlotDto {
     example: '20:00',
   })
   @IsString()
+  @Matches(TIME_FORMAT_REGEX, {
+    message: 'end must be in HH:mm format',
+  })
   end: string;
 }
 
-class DateRangeDto {
+export class DateRangeDto {
   @ApiProperty({
     description: 'Start datetime in ISO format',
     example: '2024-01-15T00:00:00Z',
