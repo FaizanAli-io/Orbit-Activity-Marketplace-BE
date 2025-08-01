@@ -1,5 +1,11 @@
 import { ApiPropertyOptional } from '@nestjs/swagger';
-import { IsOptional, IsString, IsArray, ArrayMaxSize } from 'class-validator';
+import {
+  IsOptional,
+  IsString,
+  IsArray,
+  ArrayMaxSize,
+  IsInt,
+} from 'class-validator';
 
 export class UpdateUserDto {
   @ApiPropertyOptional({ description: 'User name' })
@@ -18,12 +24,12 @@ export class UpdateUserDto {
   avatar?: string;
 
   @ApiPropertyOptional({
-    type: [String],
-    description: 'User preferences as a list of strings',
+    type: [Number],
+    description: 'User preferences as a list of subcategory ids',
   })
-  @IsString({ each: true })
-  @ArrayMaxSize(3)
+  @IsInt({ each: true })
+  @ArrayMaxSize(5)
   @IsOptional()
   @IsArray()
-  preferences?: string[];
+  preferences?: number[];
 }

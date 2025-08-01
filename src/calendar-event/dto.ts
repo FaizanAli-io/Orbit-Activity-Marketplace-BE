@@ -1,10 +1,10 @@
 import { PartialType } from '@nestjs/mapped-types';
-import { IsNumber, IsDateString, IsNotEmpty } from 'class-validator';
+import { IsNumber, IsDateString, IsOptional } from 'class-validator';
 
 export class CreateCalendarEventDto {
   @IsNumber()
-  @IsNotEmpty()
-  activityId: number;
+  @IsOptional()
+  activityId?: number;
 
   @IsDateString()
   startTime: string;

@@ -1,20 +1,45 @@
-import { User } from '@prisma/client';
 import { UpdateUserDto } from './user.dto';
-import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
+import { Injectable, BadRequestException } from '@nestjs/common';
 
 @Injectable()
 export class UserService {
   constructor(private prisma: PrismaService) {}
 
+  async getCategoryObjectsByIds(
+    ids: number[],
+  ): Promise<{ id: number; subcategory: string; category: string | null }[]> {
+    if (!ids || ids.length === 0) return [];
+    const subcategories = await this.prisma.category.findMany({
+      where: { id: { in: ids }, parentId: { not: null } },
+      include: { parent: { select: { name: true } } },
+    });
+    return subcategories.map((cat) => ({
+      id: cat.id,
+      subcategory: cat.name,
+      category: cat.parent?.name || null,
+    }));
+  }
+
+  async mapUser(user: any): Promise<any> {
+    const { auth, preferences, ...u } = user;
+    return {
+      ...u,
+      email: auth[0]?.email,
+      preferences: await this.getCategoryObjectsByIds(
+        Array.isArray(preferences)
+          ? preferences.filter((id): id is number => typeof id === 'number')
+          : [],
+      ),
+    };
+  }
+
   async findAll(): Promise<any[]> {
-    return this.prisma.user
-      .findMany({
-        include: { auth: { select: { email: true } } },
-      })
-      .then((users) =>
-        users.map(({ auth, ...u }) => ({ ...u, email: auth[0]?.email })),
-      );
+    const users = await this.prisma.user.findMany({
+      include: { auth: { select: { email: true } } },
+    });
+
+    return Promise.all(users.map((user) => this.mapUser(user)));
   }
 
   async findOne(id: number): Promise<any | null> {
@@ -22,16 +47,35 @@ export class UserService {
       where: { id },
       include: { auth: { select: { email: true } } },
     });
+
     if (!user) return null;
-    const { auth, ...u } = user;
-    return { ...u, email: auth[0]?.email };
+    return this.mapUser(user);
   }
 
-  async update(id: number, data: UpdateUserDto): Promise<User> {
-    return this.prisma.user.update({
+  async update(id: number, data: UpdateUserDto): Promise<any> {
+    if (data.preferences && Array.isArray(data.preferences)) {
+      const validSubcategories = await this.prisma.category.findMany({
+        where: { id: { in: data.preferences }, parentId: { not: null } },
+        select: { id: true },
+      });
+
+      const validIds = validSubcategories.map((s) => s.id);
+      const invalidIds = data.preferences.filter(
+        (id) => !validIds.includes(id),
+      );
+      if (invalidIds.length > 0) {
+        throw new BadRequestException(
+          `Invalid subcategory IDs: ${invalidIds.join(', ')}`,
+        );
+      }
+    }
+
+    await this.prisma.user.update({ where: { id }, data });
+    const userWithAuth = await this.prisma.user.findUnique({
       where: { id },
-      data,
+      include: { auth: { select: { email: true } } },
     });
+    return this.mapUser(userWithAuth);
   }
 
   async remove(id: number): Promise<{ message: string }> {

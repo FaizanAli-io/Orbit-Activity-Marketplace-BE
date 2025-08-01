@@ -89,14 +89,14 @@ model Activity {
 }
 
 model CalendarEvent {
-  id         Int      @id @default(autoincrement())
-  user       User     @relation(fields: [userId], references: [id])
+  id         Int       @id @default(autoincrement())
+  user       User      @relation(fields: [userId], references: [id])
   userId     Int
-  activity   Activity @relation(fields: [activityId], references: [id])
-  activityId Int
+  activity   Activity? @relation(fields: [activityId], references: [id])
+  activityId Int?
   startTime  DateTime
   endTime    DateTime
-  timestamp  DateTime @default(now())
+  timestamp  DateTime  @default(now())
 }
 
 model Payment {

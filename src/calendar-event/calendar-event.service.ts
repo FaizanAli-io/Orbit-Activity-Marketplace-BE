@@ -1,10 +1,10 @@
-import { CalendarEvent } from '@prisma/client';
-import { PrismaService } from '../prisma/prisma.service';
 import {
   Injectable,
   NotFoundException,
   BadRequestException,
 } from '@nestjs/common';
+import { CalendarEvent } from '@prisma/client';
+import { PrismaService } from '../prisma/prisma.service';
 import { ActivityAvailabilityDto } from '../activity/dtos';
 import { isEventInValidTimeslot } from './availability-check';
 import { CreateCalendarEventDto, UpdateCalendarEventDto } from './dto';
@@ -13,12 +13,15 @@ import { CreateCalendarEventDto, UpdateCalendarEventDto } from './dto';
 export class CalendarEventService {
   constructor(private prisma: PrismaService) {}
 
-  async create(
-    dto: CreateCalendarEventDto,
-    userId: number,
-  ): Promise<CalendarEvent> {
+  private async checkAvailabilityOrThrow(
+    activityId: number | null | undefined,
+    start: string,
+    end: string,
+  ) {
+    if (!activityId) return;
+
     const activity = await this.prisma.activity.findUnique({
-      where: { id: dto.activityId },
+      where: { id: activityId },
       select: { availability: true },
     });
 
@@ -26,11 +29,22 @@ export class CalendarEventService {
     const availability =
       activity.availability as unknown as ActivityAvailabilityDto;
 
-    if (!isEventInValidTimeslot(dto.startTime, dto.endTime, availability))
+    if (!isEventInValidTimeslot(start, end, availability)) {
       throw new BadRequestException(
         'Event is not in a valid timeslot for this activity',
       );
+    }
+  }
 
+  async create(
+    dto: CreateCalendarEventDto,
+    userId: number,
+  ): Promise<CalendarEvent> {
+    await this.checkAvailabilityOrThrow(
+      dto.activityId,
+      dto.startTime,
+      dto.endTime,
+    );
     return this.prisma.calendarEvent.create({ data: { ...dto, userId } });
   }
 
@@ -53,25 +67,11 @@ export class CalendarEventService {
     userId: number,
   ): Promise<CalendarEvent> {
     const event = await this.findOne(id, userId);
-
-    const activity = await this.prisma.activity.findUnique({
-      where: { id: event.activityId },
-      select: { availability: true },
-    });
-
-    if (!activity) throw new NotFoundException('Activity not found');
-    const availability =
-      activity.availability as unknown as ActivityAvailabilityDto;
-
     const start = dto.startTime ?? event.startTime.toISOString();
     const end = dto.endTime ?? event.endTime.toISOString();
+    const activityId = dto.activityId ?? event.activityId;
 
-    if (!isEventInValidTimeslot(start, end, availability)) {
-      throw new BadRequestException(
-        'Event is not in a valid timeslot for this activity',
-      );
-    }
-
+    await this.checkAvailabilityOrThrow(activityId, start, end);
     return this.prisma.calendarEvent.update({ where: { id }, data: dto });
   }
 
