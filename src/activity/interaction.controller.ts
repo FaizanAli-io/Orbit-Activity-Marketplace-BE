@@ -6,7 +6,6 @@ import {
   UseGuards,
   Controller,
 } from '@nestjs/common';
-
 import {
   ApiTags,
   ApiParam,
@@ -14,11 +13,8 @@ import {
   ApiOperation,
   ApiBearerAuth,
 } from '@nestjs/swagger';
-
+import { Auth, AuthRole } from '../decorators';
 import { AuthGuard } from '../guards/auth.guard';
-import { Auth } from '../decorators/auth.decorator';
-import { AuthRole } from '../decorators/auth-role.decorator';
-
 import { InteractionService } from './interaction.service';
 
 @ApiTags('Interactions')

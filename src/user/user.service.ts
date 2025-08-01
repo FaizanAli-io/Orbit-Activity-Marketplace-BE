@@ -42,16 +42,6 @@ export class UserService {
     return Promise.all(users.map((user) => this.mapUser(user)));
   }
 
-  async findOne(id: number): Promise<any | null> {
-    const user = await this.prisma.user.findUnique({
-      where: { id },
-      include: { auth: { select: { email: true } } },
-    });
-
-    if (!user) return null;
-    return this.mapUser(user);
-  }
-
   async update(id: number, data: UpdateUserDto): Promise<any> {
     if (data.preferences && Array.isArray(data.preferences)) {
       const validSubcategories = await this.prisma.category.findMany({

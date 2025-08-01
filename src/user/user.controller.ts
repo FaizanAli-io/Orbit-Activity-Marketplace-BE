@@ -1,76 +1,79 @@
-import { Get, Patch, Delete, Body, Param, Controller } from '@nestjs/common';
+import {
+  Get,
+  Patch,
+  Delete,
+  Body,
+  UseGuards,
+  Controller,
+} from '@nestjs/common';
 import {
   ApiTags,
   ApiBody,
-  ApiParam,
   ApiResponse,
   ApiOperation,
+  ApiBearerAuth,
 } from '@nestjs/swagger';
 import { UpdateUserDto } from './user.dto';
 import { UserService } from './user.service';
+import { AuthGuard } from '../guards/auth.guard';
+import { Auth, AuthRole, Public } from '../decorators';
 
 @ApiTags('Users')
 @Controller('users')
+@UseGuards(AuthGuard)
+@AuthRole('USER')
+@ApiBearerAuth('access-token')
 export class UserController {
   constructor(private readonly userService: UserService) {}
 
   @Get()
+  @Public()
   @ApiOperation({ summary: 'Get all users' })
   @ApiResponse({ status: 200, description: 'Return all users.' })
   findAll() {
     return this.userService.findAll();
   }
 
-  @Get(':id')
-  @ApiOperation({ summary: 'Get user by id' })
-  @ApiParam({ name: 'id', type: Number })
-  @ApiResponse({ status: 200, description: 'Return user by id.' })
-  findOne(@Param('id') id: number) {
-    return this.userService.findOne(id);
-  }
-
-  @Patch(':id')
-  @ApiOperation({ summary: 'Update user by id' })
-  @ApiParam({ name: 'id', type: Number })
+  @Patch()
+  @ApiOperation({ summary: 'Update current user' })
   @ApiBody({ type: UpdateUserDto })
   @ApiResponse({
     status: 200,
     description: 'The user has been successfully updated.',
   })
-  update(@Param('id') id: number, @Body() data: UpdateUserDto) {
-    return this.userService.update(id, data);
+  update(@Body() data: UpdateUserDto, @Auth() auth: any) {
+    return this.userService.update(auth.userId, data);
   }
 
-  @Delete(':id')
-  @ApiOperation({ summary: 'Delete user by id' })
-  @ApiParam({ name: 'id', type: Number })
+  @Delete()
+  @ApiOperation({ summary: 'Delete current user' })
   @ApiResponse({
     status: 200,
     description: 'The user has been successfully deleted.',
   })
-  async remove(@Param('id') id: number) {
-    return this.userService.remove(id);
+  async remove(@Auth() auth: any) {
+    return this.userService.remove(auth.userId);
   }
 
-  @Get(':id/liked')
-  @ApiOperation({ summary: 'Get all liked activities for a user' })
-  @ApiParam({ name: 'id', type: Number })
+  @Get('liked')
+  @ApiOperation({ summary: 'Get all liked activities for the current user' })
   @ApiResponse({
     status: 200,
     description: 'Return all liked activities for user.',
   })
-  getLiked(@Param('id') id: number) {
-    return this.userService.getLiked(id);
+  getLiked(@Auth() auth: any) {
+    return this.userService.getLiked(auth.userId);
   }
 
-  @Get(':id/subscriptions')
-  @ApiOperation({ summary: 'Get all signed-up activities for a user' })
-  @ApiParam({ name: 'id', type: Number })
+  @Get('subscriptions')
+  @ApiOperation({
+    summary: 'Get all signed-up activities for the current user',
+  })
   @ApiResponse({
     status: 200,
     description: 'Return all subscribed activities for user.',
   })
-  getSubscriptions(@Param('id') id: number) {
-    return this.userService.getSubscriptions(id);
+  getSubscriptions(@Auth() auth: any) {
+    return this.userService.getSubscriptions(auth.userId);
   }
 }

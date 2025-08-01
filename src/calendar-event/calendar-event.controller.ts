@@ -15,9 +15,8 @@ import {
   ApiOperation,
   ApiBearerAuth,
 } from '@nestjs/swagger';
+import { Auth, AuthRole } from '../decorators';
 import { AuthGuard } from '../guards/auth.guard';
-import { Auth } from '../decorators/auth.decorator';
-import { AuthRole } from '../decorators/auth-role.decorator';
 import { CalendarEventService } from './calendar-event.service';
 import { CreateCalendarEventDto, UpdateCalendarEventDto } from './dto';
 

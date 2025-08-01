@@ -17,16 +17,6 @@ export class VendorService {
       );
   }
 
-  async findOne(id: number): Promise<any | null> {
-    const vendor = await this.prisma.vendor.findUnique({
-      where: { id },
-      include: { auth: { select: { email: true } } },
-    });
-    if (!vendor) return null;
-    const { auth, ...v } = vendor;
-    return { ...v, email: auth[0]?.email };
-  }
-
   async update(id: number, data: UpdateVendorDto): Promise<Vendor> {
     return this.prisma.vendor.update({
       where: { id },

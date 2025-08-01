@@ -16,11 +16,10 @@ import {
   ApiOperation,
   ApiBearerAuth,
 } from '@nestjs/swagger';
+import { Auth, AuthRole } from '../decorators';
 import { AuthGuard } from '../guards/auth.guard';
-import { Auth } from '../decorators/auth.decorator';
-import { AuthRole } from '../decorators/auth-role.decorator';
-import { CreatePaymentDto, UpdatePaymentDto } from './dto';
 import { PaymentService } from './payment.service';
+import { CreatePaymentDto, UpdatePaymentDto } from './dto';
 
 @ApiTags('Payments')
 @Controller('payments')
