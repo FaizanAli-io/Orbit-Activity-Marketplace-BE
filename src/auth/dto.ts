@@ -1,6 +1,13 @@
 import { AuthRole } from '@prisma/client';
-import { ApiProperty } from '@nestjs/swagger';
-import { IsEmail, IsString, MinLength, IsEnum } from 'class-validator';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import {
+  IsEnum,
+  IsEmail,
+  IsString,
+  MinLength,
+  IsOptional,
+  ValidateIf,
+} from 'class-validator';
 
 export class SignupDto {
   @ApiProperty()
@@ -11,10 +18,22 @@ export class SignupDto {
   @IsEmail()
   email: string;
 
-  @ApiProperty()
+  @ApiPropertyOptional({
+    description: 'Password (required if firebaseId not provided)',
+  })
+  @IsOptional()
+  @ValidateIf((o) => !o.firebaseId)
   @IsString()
   @MinLength(6)
-  password: string;
+  password?: string;
+
+  @ApiPropertyOptional({
+    description: 'Firebase ID (required if password not provided)',
+  })
+  @IsOptional()
+  @ValidateIf((o) => !o.password)
+  @IsString()
+  firebaseId?: string;
 
   @ApiProperty({ enum: AuthRole })
   @IsEnum(AuthRole)
@@ -26,9 +45,21 @@ export class LoginDto {
   @IsEmail()
   email: string;
 
-  @ApiProperty()
+  @ApiPropertyOptional({
+    description: 'Password (required if firebaseId not provided)',
+  })
+  @IsOptional()
+  @ValidateIf((o) => !o.firebaseId)
   @IsString()
-  password: string;
+  password?: string;
+
+  @ApiPropertyOptional({
+    description: 'Firebase ID (required if password not provided)',
+  })
+  @IsOptional()
+  @ValidateIf((o) => !o.password)
+  @IsString()
+  firebaseId?: string;
 }
 
 export class VerifyEmailDto {

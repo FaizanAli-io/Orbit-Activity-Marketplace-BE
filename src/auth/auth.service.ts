@@ -18,13 +18,37 @@ export class AuthService {
   ) {}
 
   async signup(data: SignupDto) {
-    const { email, password, name, type } = data;
+    const { email, password, firebaseId, name, type } = data;
+
+    // Validate that either password or firebaseId is provided
+    if (!password && !firebaseId) {
+      throw new BadRequestException(
+        'Either password or firebaseId must be provided',
+      );
+    }
+
+    if (password && firebaseId) {
+      throw new BadRequestException(
+        'Provide either password or firebaseId, not both',
+      );
+    }
 
     const existing = await this.prisma.auth.findUnique({ where: { email } });
     if (existing) throw new BadRequestException('Email already in use');
 
-    const hashed = await bcrypt.hash(password, 10);
-    const verificationToken = uuidv4();
+    // If firebaseId is provided, check if it's already in use
+    if (firebaseId) {
+      const existingFirebase = await this.prisma.auth.findFirst({
+        where: { firebaseId },
+      });
+      if (existingFirebase) {
+        throw new BadRequestException('Firebase ID already in use');
+      }
+    }
+
+    const hashed = password ? await bcrypt.hash(password, 10) : null;
+    const verificationToken = firebaseId ? null : uuidv4(); // No verification needed for Firebase users
+    const isVerified = !!firebaseId; // Firebase users are auto-verified
     const isUser = type === 'USER';
 
     const entity = isUser
@@ -39,25 +63,65 @@ export class AuthService {
       email,
       userId,
       vendorId,
+      firebaseId,
       role: authRole,
       password: hashed,
       verificationToken,
+      verified: isVerified,
     };
 
     await this.prisma.auth.create({ data: authData });
-    await this.emailService.sendVerification(email, verificationToken);
 
-    return { message: 'Signup successful, please verify your email.' };
+    // Send verification email only for password-based signups
+    if (!firebaseId && verificationToken) {
+      await this.emailService.sendVerification(email, verificationToken);
+      return { message: 'Signup successful, please verify your email.' };
+    }
+
+    return { message: 'Signup successful! You can now log in.' };
   }
 
   async login(data: LoginDto) {
-    const { email, password } = data;
+    const { email, password, firebaseId } = data;
+
+    // Validate that either password or firebaseId is provided
+    if (!password && !firebaseId) {
+      throw new UnauthorizedException(
+        'Either password or firebaseId must be provided',
+      );
+    }
+
+    if (password && firebaseId) {
+      throw new UnauthorizedException(
+        'Provide either password or firebaseId, not both',
+      );
+    }
 
     const auth = await this.prisma.auth.findUnique({ where: { email } });
     if (!auth) throw new UnauthorizedException('Invalid credentials');
 
-    const valid = await bcrypt.compare(password, auth.password);
-    if (!valid) throw new UnauthorizedException('Invalid credentials');
+    // Password-based login
+    if (password) {
+      if (!auth.password) {
+        throw new UnauthorizedException(
+          'This account uses Firebase authentication',
+        );
+      }
+      const valid = await bcrypt.compare(password, auth.password);
+      if (!valid) throw new UnauthorizedException('Invalid credentials');
+    }
+
+    // Firebase-based login
+    if (firebaseId) {
+      if (!auth.firebaseId) {
+        throw new UnauthorizedException(
+          'This account uses password authentication',
+        );
+      }
+      if (auth.firebaseId !== firebaseId) {
+        throw new UnauthorizedException('Invalid Firebase credentials');
+      }
+    }
 
     if (!auth.verified) throw new UnauthorizedException('Email not verified');
 
@@ -93,6 +157,12 @@ export class AuthService {
     const auth = await this.prisma.auth.findUnique({ where: { email } });
     if (!auth) throw new BadRequestException('No account with that email');
 
+    if (!auth.password) {
+      throw new BadRequestException(
+        'This account uses Firebase authentication and cannot reset password',
+      );
+    }
+
     const token = uuidv4();
     await this.prisma.auth.update({
       where: { email },
@@ -109,6 +179,12 @@ export class AuthService {
     });
     if (!auth) {
       throw new BadRequestException('Invalid or expired token');
+    }
+
+    if (!auth.password) {
+      throw new BadRequestException(
+        'This account uses Firebase authentication and cannot reset password',
+      );
     }
 
     const hashed = await bcrypt.hash(newPassword, 10);

@@ -116,7 +116,8 @@ model Payment {
 model Auth {
   id                 Int      @id @default(autoincrement())
   email              String   @unique
-  password           String
+  password           String?
+  firebaseId         String?  @unique
   verified           Boolean  @default(false)
   role               AuthRole
   accessToken        String?  @unique
