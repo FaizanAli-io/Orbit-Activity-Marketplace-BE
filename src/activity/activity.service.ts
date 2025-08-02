@@ -16,17 +16,12 @@ export class ActivityService {
   ) {
     const data: any = { ...dto };
 
-    if (dto.availability) {
+    if (dto.availability)
       data.availability = JSON.parse(JSON.stringify(dto.availability));
-    }
 
-    if (dto.images) {
-      data.images = JSON.parse(JSON.stringify(dto.images));
-    }
+    if (dto.images) data.images = JSON.parse(JSON.stringify(dto.images));
 
-    if (vendorId) {
-      data.vendorId = vendorId;
-    }
+    if (vendorId) data.vendorId = vendorId;
 
     return data;
   }

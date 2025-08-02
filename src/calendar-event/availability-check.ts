@@ -5,30 +5,60 @@ import {
   isSameDay,
   isWithinInterval,
 } from 'date-fns';
+import { formatInTimeZone } from 'date-fns-tz';
 import {
   TimeSlotDto,
   DateRangeDto,
   ActivityAvailabilityDto,
 } from '../activity/dtos';
 
-function checkRangeBounds(start: Date, end: Date, range: DateRangeDto) {
+interface ValidationResult {
+  isValid: boolean;
+  error?: string;
+}
+
+function formatUTC(date: Date, formatStr: string): string {
+  return formatInTimeZone(date, 'UTC', formatStr);
+}
+
+function checkRangeBounds(
+  start: Date,
+  end: Date,
+  range: DateRangeDto,
+): ValidationResult {
   const rangeStart = parseISO(range.start);
   const rangeEnd = parseISO(range.end);
 
-  return start >= rangeStart && end <= rangeEnd;
+  if (start < rangeStart || end > rangeEnd) {
+    return {
+      isValid: false,
+      error: `Event time ${formatUTC(start, 'yyyy-MM-dd HH:mm')} to ${formatUTC(end, 'yyyy-MM-dd HH:mm')} is outside the allowed date range ${formatUTC(rangeStart, 'yyyy-MM-dd')} to ${formatUTC(rangeEnd, 'yyyy-MM-dd')}`,
+    };
+  }
+  return { isValid: true };
 }
 
-function checkSlotBounds(start: Date, end: Date, time: TimeSlotDto) {
+function checkSlotBounds(
+  start: Date,
+  end: Date,
+  time: TimeSlotDto,
+): ValidationResult {
   const [slotStartHour, slotStartMinute] = time.start.split(':').map(Number);
   const [slotEndHour, slotEndMinute] = time.end.split(':').map(Number);
 
   const slotStart = new Date(start);
   const slotEnd = new Date(start);
 
-  slotStart.setUTCHours(slotStartHour, slotStartMinute);
-  slotEnd.setUTCHours(slotEndHour, slotEndMinute);
+  slotStart.setUTCHours(slotStartHour, slotStartMinute, 0, 0);
+  slotEnd.setUTCHours(slotEndHour, slotEndMinute, 0, 0);
 
-  return start >= slotStart && end <= slotEnd;
+  if (start < slotStart || end > slotEnd) {
+    return {
+      isValid: false,
+      error: `Event time ${formatUTC(start, 'HH:mm')} to ${formatUTC(end, 'HH:mm')} is outside the allowed time slot ${time.start} to ${time.end}`,
+    };
+  }
+  return { isValid: true };
 }
 
 /**
@@ -36,70 +66,128 @@ function checkSlotBounds(start: Date, end: Date, time: TimeSlotDto) {
  * @param eventStart ISO string of event start datetime
  * @param eventEnd ISO string of event end datetime
  * @param availability ActivityAvailabilityDto
- * @returns boolean
+ * @returns ValidationResult with isValid boolean and optional error message
  */
-export function isEventInValidTimeslot(
+export function validateEventTimeslot(
   eventStart: string,
   eventEnd: string,
   availability: ActivityAvailabilityDto,
-): boolean {
+): ValidationResult {
   const start = parseISO(eventStart);
   const end = parseISO(eventEnd);
 
-  if (
-    availability.exclusions &&
-    availability.exclusions.some((ex) =>
-      isWithinInterval(start, {
-        start: parseISO(ex),
-        end: parseISO(ex),
-      }),
-    )
-  ) {
-    return false;
+  // Check exclusions first
+  if (availability.exclusions) {
+    for (const ex of availability.exclusions) {
+      if (isWithinInterval(start, { start: parseISO(ex), end: parseISO(ex) })) {
+        return {
+          isValid: false,
+          error: `Event date ${formatUTC(start, 'yyyy-MM-dd')} is excluded from this activity`,
+        };
+      }
+    }
   }
 
   switch (availability.type) {
     case 'dates':
-      if (!availability.dates) return false;
-      return availability.dates.some((dateWithTime) => {
-        if (!isSameDay(start, parseISO(dateWithTime.date))) return false;
-        return checkSlotBounds(start, end, dateWithTime.time);
-      });
+      if (!availability.dates) {
+        return {
+          isValid: false,
+          error: 'No specific dates configured for this activity',
+        };
+      }
+
+      for (const dateWithTime of availability.dates) {
+        if (isSameDay(start, parseISO(dateWithTime.date))) {
+          return checkSlotBounds(start, end, dateWithTime.time);
+        }
+      }
+      return {
+        isValid: false,
+        error: `Event date ${formatUTC(start, 'yyyy-MM-dd')} is not available for this activity`,
+      };
 
     case 'range':
-      if (!availability.range) return false;
-      {
-        if (!checkRangeBounds(start, end, availability.range.date))
-          return false;
-
-        return checkSlotBounds(start, end, availability.range.time);
+      if (!availability.range) {
+        return {
+          isValid: false,
+          error: 'No date range configured for this activity',
+        };
       }
+
+      const rangeCheck = checkRangeBounds(start, end, availability.range.date);
+      if (!rangeCheck.isValid) return rangeCheck;
+
+      return checkSlotBounds(start, end, availability.range.time);
 
     case 'weekly':
-      if (!availability.weekly) return false;
-      {
-        if (!checkRangeBounds(start, end, availability.weekly.date))
-          return false;
-
-        const jsDay = getDay(start) === 0 ? 7 : getDay(start);
-        if (!availability.weekly.days.includes(jsDay)) return false;
-
-        return checkSlotBounds(start, end, availability.weekly.time);
+      if (!availability.weekly) {
+        return {
+          isValid: false,
+          error: 'No weekly schedule configured for this activity',
+        };
       }
+
+      const weeklyRangeCheck = checkRangeBounds(
+        start,
+        end,
+        availability.weekly.date,
+      );
+      if (!weeklyRangeCheck.isValid) return weeklyRangeCheck;
+
+      const jsDay = getDay(start) === 0 ? 7 : getDay(start);
+      const dayNames = [
+        '',
+        'Monday',
+        'Tuesday',
+        'Wednesday',
+        'Thursday',
+        'Friday',
+        'Saturday',
+        'Sunday',
+      ];
+
+      if (!availability.weekly.days.includes(jsDay)) {
+        const allowedDays = availability.weekly.days
+          .map((d) => dayNames[d])
+          .join(', ');
+        return {
+          isValid: false,
+          error: `${dayNames[jsDay]} is not a valid weekday for this activity. Allowed days: ${allowedDays}`,
+        };
+      }
+
+      return checkSlotBounds(start, end, availability.weekly.time);
 
     case 'monthly':
-      if (!availability.monthly) return false;
-      {
-        if (!checkRangeBounds(start, end, availability.monthly.date))
-          return false;
-
-        const dayOfMonth = getDate(start);
-        if (!availability.monthly.days.includes(dayOfMonth)) return false;
-
-        return checkSlotBounds(start, end, availability.monthly.time);
+      if (!availability.monthly) {
+        return {
+          isValid: false,
+          error: 'No monthly schedule configured for this activity',
+        };
       }
 
+      const monthlyRangeCheck = checkRangeBounds(
+        start,
+        end,
+        availability.monthly.date,
+      );
+      if (!monthlyRangeCheck.isValid) return monthlyRangeCheck;
+
+      const dayOfMonth = getDate(start);
+      if (!availability.monthly.days.includes(dayOfMonth)) {
+        return {
+          isValid: false,
+          error: `Day ${dayOfMonth} is not a valid day of the month for this activity. Allowed days: ${availability.monthly.days.join(', ')}`,
+        };
+      }
+
+      return checkSlotBounds(start, end, availability.monthly.time);
+
     default:
-      return false;
+      return {
+        isValid: false,
+        error: 'Unknown availability type configured for this activity',
+      };
   }
 }

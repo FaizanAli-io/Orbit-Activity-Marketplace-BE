@@ -6,7 +6,7 @@ import {
 import { CalendarEvent } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 import { ActivityAvailabilityDto } from '../activity/dtos';
-import { isEventInValidTimeslot } from './availability-check';
+import { validateEventTimeslot } from './availability-check';
 import { CreateCalendarEventDto, UpdateCalendarEventDto } from './dto';
 
 @Injectable()
@@ -29,11 +29,8 @@ export class CalendarEventService {
     const availability =
       activity.availability as unknown as ActivityAvailabilityDto;
 
-    if (!isEventInValidTimeslot(start, end, availability)) {
-      throw new BadRequestException(
-        'Event is not in a valid timeslot for this activity',
-      );
-    }
+    const { isValid, error } = validateEventTimeslot(start, end, availability);
+    if (!isValid) throw new BadRequestException(error);
   }
 
   async create(
