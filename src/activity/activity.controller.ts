@@ -41,9 +41,10 @@ export class ActivityController {
 
   @Get()
   @ApiOperation({ summary: 'Get all activities (with filters)' })
+  @ApiQuery({ name: 'name', required: false })
   @ApiQuery({ name: 'location', required: false })
   @ApiQuery({ name: 'vendorId', required: false })
-  @ApiQuery({ name: 'category', required: false })
+  @ApiQuery({ name: 'categoryId', required: false })
   @ApiResponse({ status: 200, description: 'Return all activities.' })
   findAll(@Query() query: any) {
     return this.activityService.findAll(query);

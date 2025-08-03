@@ -45,11 +45,17 @@ export class ActivityService {
     if (filters.location) where.location = filters.location;
     if (filters.vendorId) where.vendorId = parseInt(filters.vendorId);
     if (filters.categoryId) where.categoryId = parseInt(filters.categoryId);
-    return this.prisma.activity.findMany({ where });
+    if (filters.name)
+      where.name = { mode: 'insensitive', contains: filters.name };
+
+    return this.prisma.activity.findMany({ where, include: { vendor: true } });
   }
 
   async findOne(id: number) {
-    const activity = await this.prisma.activity.findUnique({ where: { id } });
+    const activity = await this.prisma.activity.findUnique({
+      where: { id },
+      include: { vendor: true },
+    });
     if (!activity) throw new NotFoundException('Activity not found');
     return activity;
   }
