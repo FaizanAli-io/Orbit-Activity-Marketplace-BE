@@ -101,7 +101,7 @@ export class AuthService {
     if (password) {
       if (!auth.password) {
         throw new UnauthorizedException(
-          'This account uses Firebase authentication',
+          'This account was registered using Google. Please log in with Google instead.',
         );
       }
       const valid = await bcrypt.compare(password, auth.password);
@@ -111,7 +111,7 @@ export class AuthService {
     if (firebaseId) {
       if (!auth.firebaseId) {
         throw new UnauthorizedException(
-          'This account uses password authentication',
+          'This account was registered with an email and password. Please log in using your email and password.',
         );
       }
       if (auth.firebaseId !== firebaseId) {
