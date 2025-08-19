@@ -60,7 +60,7 @@ export class AppService {
           <h1>🚀 Orbit Activity Marketplace API</h1>
           <p>Welcome to the Orbit Activity Marketplace API.<br>
           Explore the <b>API documentation</b> below to get started.</p>
-          <a class="api-link" href="/api" target="_blank">View API Docs</a>
+          <a class="api-link" href="/docs" target="_blank">View API Docs</a>
         </div>
       </body>
       </html>

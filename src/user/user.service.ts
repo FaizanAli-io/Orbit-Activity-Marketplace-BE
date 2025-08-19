@@ -1,32 +1,19 @@
 import { UpdateUserDto } from './user.dto';
 import { PrismaService } from '../prisma/prisma.service';
 import { Injectable, BadRequestException } from '@nestjs/common';
+import { getCategoryObjectsByIds } from '../utils/category.utils';
 
 @Injectable()
 export class UserService {
   constructor(private prisma: PrismaService) {}
-
-  async getCategoryObjectsByIds(
-    ids: number[],
-  ): Promise<{ id: number; subcategory: string; category: string | null }[]> {
-    if (!ids || ids.length === 0) return [];
-    const subcategories = await this.prisma.category.findMany({
-      where: { id: { in: ids }, parentId: { not: null } },
-      include: { parent: { select: { name: true } } },
-    });
-    return subcategories.map((cat) => ({
-      id: cat.id,
-      subcategory: cat.name,
-      category: cat.parent?.name || null,
-    }));
-  }
 
   async mapUser(user: any): Promise<any> {
     const { auth, preferences, ...u } = user;
     return {
       ...u,
       email: auth[0]?.email,
-      preferences: await this.getCategoryObjectsByIds(
+      preferences: await getCategoryObjectsByIds(
+        this.prisma,
         Array.isArray(preferences)
           ? preferences.filter((id): id is number => typeof id === 'number')
           : [],

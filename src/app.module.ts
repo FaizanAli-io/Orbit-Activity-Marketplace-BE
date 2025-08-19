@@ -9,6 +9,7 @@ import { PaymentModule } from './payment/payment.module';
 import { ActivityModule } from './activity/activity.module';
 import { CategoryModule } from './category/category.module';
 import { CalendarEventModule } from './calendar-event/calendar-event.module';
+import { ReccomendationModule } from './reccomendation/reccomendation.module';
 
 @Module({
   imports: [
@@ -19,6 +20,7 @@ import { CalendarEventModule } from './calendar-event/calendar-event.module';
     ActivityModule,
     CategoryModule,
     CalendarEventModule,
+    ReccomendationModule,
     ConfigModule.forRoot({ isGlobal: true }),
   ],
   controllers: [AppController],

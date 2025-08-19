@@ -5,10 +5,19 @@ import {
 } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateActivityDto, UpdateActivityDto } from './dtos';
+import { getCategoryObjectsByIds } from '../utils/category.utils';
 
 @Injectable()
 export class ActivityService {
   constructor(private prisma: PrismaService) {}
+
+  async mapActivity(activity: any): Promise<any> {
+    const categoryInfo = await getCategoryObjectsByIds(this.prisma, [
+      activity.categoryId,
+    ]);
+
+    return { ...activity, category: categoryInfo[0] };
+  }
 
   private convertDtoToPrismaData(
     dto: CreateActivityDto | UpdateActivityDto,
@@ -47,16 +56,16 @@ export class ActivityService {
     if (filters.categoryId) where.categoryId = parseInt(filters.categoryId);
     if (filters.name)
       where.name = { mode: 'insensitive', contains: filters.name };
+    const args = { where, include: { vendor: true, category: true } };
 
-    return this.prisma.activity.findMany({ where, include: { vendor: true } });
+    return await this.prisma.activity.findMany({ ...args });
   }
 
   async findOne(id: number) {
-    const activity = await this.prisma.activity.findUnique({
-      where: { id },
-      include: { vendor: true },
-    });
+    const args = { where: { id }, include: { vendor: true, category: true } };
+    const activity = await this.prisma.activity.findUnique({ ...args });
     if (!activity) throw new NotFoundException('Activity not found');
+
     return activity;
   }
 

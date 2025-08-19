@@ -9,6 +9,7 @@ import { AuthRole } from '@prisma/client';
 import { SignupDto, LoginDto } from './dto';
 import { EmailService } from '../email/email.service';
 import { PrismaService } from '../prisma/prisma.service';
+import { getCategoryObjectsByIds } from '../utils/category.utils';
 
 @Injectable()
 export class AuthService {
@@ -199,6 +200,24 @@ export class AuthService {
       const user = await this.prisma.user.findUnique({
         where: { id: auth.userId },
       });
+
+      if (user) {
+        const preferences = await getCategoryObjectsByIds(
+          this.prisma,
+          Array.isArray(user.preferences)
+            ? user.preferences.filter(
+                (id): id is number => typeof id === 'number',
+              )
+            : [],
+        );
+
+        return {
+          role: 'USER',
+          email: auth.email,
+          user: { ...user, preferences },
+        };
+      }
+
       return { role: 'USER', email: auth.email, user };
     }
 
