@@ -18,10 +18,11 @@ import {
   ApiOperation,
   ApiBearerAuth,
 } from '@nestjs/swagger';
-import { Auth, AuthRole } from '../decorators';
 import { AuthGuard } from '../guards/auth.guard';
 import { ActivityService } from './activity.service';
+import { PaginationDto } from '../utils/pagination.dto';
 import { CreateActivityDto, UpdateActivityDto } from './dtos';
+import { Auth, AuthRole, ApiPagination } from '../decorators';
 
 @ApiTags('Activities')
 @Controller('activities')
@@ -40,14 +41,56 @@ export class ActivityController {
   }
 
   @Get()
-  @ApiOperation({ summary: 'Get all activities (with filters)' })
-  @ApiQuery({ name: 'name', required: false })
-  @ApiQuery({ name: 'location', required: false })
-  @ApiQuery({ name: 'vendorId', required: false })
-  @ApiQuery({ name: 'categoryId', required: false })
-  @ApiResponse({ status: 200, description: 'Return all activities.' })
-  findAll(@Query() query: any) {
-    return this.activityService.findAll(query);
+  @ApiOperation({
+    summary: 'Get all activities (with filters, sorting and pagination)',
+  })
+  @ApiQuery({
+    name: 'name',
+    required: false,
+    description: 'Filter by activity name',
+  })
+  @ApiQuery({
+    name: 'location',
+    required: false,
+    description: 'Filter by location',
+  })
+  @ApiQuery({
+    name: 'vendorId',
+    required: false,
+    description: 'Filter by vendor ID',
+  })
+  @ApiQuery({
+    name: 'categoryId',
+    required: false,
+    description: 'Filter by category ID',
+  })
+  @ApiQuery({
+    name: 'minPrice',
+    required: false,
+    type: Number,
+    description: 'Minimum price filter',
+  })
+  @ApiQuery({
+    name: 'maxPrice',
+    required: false,
+    type: Number,
+    description: 'Maximum price filter',
+  })
+  @ApiQuery({
+    name: 'sortBy',
+    required: false,
+    enum: ['likes', 'subscriptions', 'price_asc', 'price_desc', 'newest'],
+    description:
+      'Sort activities by: likes count, subscriptions count, price (asc/desc), or newest (default)',
+  })
+  @ApiPagination()
+  @ApiResponse({
+    status: 200,
+    description: 'Return paginated activities with filters and sorting.',
+  })
+  findAll(@Query() query: any & PaginationDto) {
+    const { page, limit, ...filters } = query;
+    return this.activityService.findAll(filters, { page, limit });
   }
 
   @Get(':id')

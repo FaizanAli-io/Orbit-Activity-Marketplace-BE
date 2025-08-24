@@ -6,6 +6,11 @@ import {
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateActivityDto, UpdateActivityDto } from './dtos';
 import { getCategoryObjectsByIds } from '../utils/category.utils';
+import {
+  PaginationHelper,
+  PaginationOptions,
+  PaginationResult,
+} from '../utils/pagination.utils';
 
 @Injectable()
 export class ActivityService {
@@ -49,16 +54,58 @@ export class ActivityService {
     return this.prisma.activity.create({ data });
   }
 
-  async findAll(filters: any) {
+  async findAll(
+    filters: any,
+    paginationOptions: PaginationOptions = {},
+  ): Promise<PaginationResult<any>> {
     const where: any = {};
     if (filters.location) where.location = filters.location;
     if (filters.vendorId) where.vendorId = parseInt(filters.vendorId);
     if (filters.categoryId) where.categoryId = parseInt(filters.categoryId);
     if (filters.name)
       where.name = { mode: 'insensitive', contains: filters.name };
-    const args = { where, include: { vendor: true, category: true } };
 
-    return await this.prisma.activity.findMany({ ...args });
+    if (filters.minPrice || filters.maxPrice) {
+      where.price = {};
+      if (filters.minPrice) where.price.gte = parseFloat(filters.minPrice);
+      if (filters.maxPrice) where.price.lte = parseFloat(filters.maxPrice);
+    }
+
+    let orderBy: any = { timestamp: 'desc' };
+
+    if (filters.sortBy === 'likes') {
+      orderBy = { likedBy: { _count: 'desc' } };
+    } else if (filters.sortBy === 'subscriptions') {
+      orderBy = { subscribedBy: { _count: 'desc' } };
+    } else if (filters.sortBy === 'price_asc') {
+      orderBy = { price: 'asc' };
+    } else if (filters.sortBy === 'price_desc') {
+      orderBy = { price: 'desc' };
+    }
+
+    return PaginationHelper.paginate(
+      // Count function
+      () => this.prisma.activity.count({ where }),
+
+      // Data function
+      async (paginationParams) => {
+        const activities = await this.prisma.activity.findMany({
+          where,
+          orderBy,
+          skip: paginationParams.skip,
+          take: paginationParams.take,
+          include: {
+            vendor: true,
+            category: true,
+            _count: { select: { likedBy: true, subscribedBy: true } },
+          },
+        });
+        return Promise.all(
+          activities.map((activity) => this.mapActivity(activity)),
+        );
+      },
+      paginationOptions,
+    );
   }
 
   async findOne(id: number) {

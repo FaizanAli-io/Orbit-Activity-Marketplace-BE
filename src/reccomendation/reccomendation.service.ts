@@ -8,18 +8,43 @@ import {
   filterAvailableActivities,
   filterActivitiesAvailableInRange,
 } from './system';
+import {
+  PaginationHelper,
+  PaginationOptions,
+  PaginationResult,
+} from '../utils/pagination.utils';
 
 @Injectable()
 export class ReccomendationService {
   constructor(private prisma: PrismaService) {}
 
-  async getUserRecommendations(userId: number) {
+  async getUserRecommendations(
+    userId: number,
+    paginationOptions: PaginationOptions = {},
+  ): Promise<PaginationResult<any>> {
     const user = await this.prisma.user.findUnique({
       select: { preferences: true, calendar: true },
       where: { id: userId },
     });
     if (!user) throw new Error('User not found');
 
+    const allRankedActivities = await this.getAllRankedRecommendations(user);
+
+    const { page, limit } =
+      PaginationHelper.validateAndNormalize(paginationOptions);
+    const { skip, take } = PaginationHelper.getPaginationParams(page, limit);
+
+    const paginatedData = allRankedActivities.slice(skip, skip + take);
+
+    return PaginationHelper.buildPaginationResult(
+      paginatedData,
+      allRankedActivities.length,
+      page,
+      limit,
+    );
+  }
+
+  private async getAllRankedRecommendations(user: any): Promise<any[]> {
     const categoryPreferences: CategoryPreferences = {};
     if (user.preferences && Array.isArray(user.preferences)) {
       for (const categoryId of user.preferences) {
@@ -85,13 +110,11 @@ export class ReccomendationService {
       include: { vendor: true, category: true },
     });
 
-    const fullRankedActivities = rankedActivities
+    return rankedActivities
       .map((ranked) => {
         const activity = fullActivities.find((a) => a.id === ranked.id);
-        return activity ? { ...activity, score: ranked.score } : null;
+        return activity ? { ...activity, score: (ranked as any).score } : null;
       })
       .filter(Boolean);
-
-    return fullRankedActivities;
   }
 }

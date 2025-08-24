@@ -3,6 +3,7 @@ import {
   Patch,
   Delete,
   Body,
+  Query,
   UseGuards,
   Controller,
 } from '@nestjs/common';
@@ -16,7 +17,8 @@ import {
 import { UpdateUserDto } from './user.dto';
 import { UserService } from './user.service';
 import { AuthGuard } from '../guards/auth.guard';
-import { Auth, AuthRole, Public } from '../decorators';
+import { PaginationDto } from '../utils/pagination.dto';
+import { Auth, AuthRole, Public, ApiPagination } from '../decorators';
 
 @ApiTags('Users')
 @Controller('users')
@@ -56,24 +58,31 @@ export class UserController {
   }
 
   @Get('liked')
-  @ApiOperation({ summary: 'Get all liked activities for the current user' })
+  @ApiOperation({
+    summary: 'Get all liked activities for the current user with pagination',
+  })
+  @ApiPagination()
   @ApiResponse({
     status: 200,
-    description: 'Return all liked activities for user.',
+    description: 'Return paginated liked activities for user.',
   })
-  getLiked(@Auth() auth: any) {
-    return this.userService.getLiked(auth.userId);
+  getLiked(@Auth() auth: any, @Query() query: PaginationDto) {
+    const { page, limit } = query;
+    return this.userService.getLiked(auth.userId, { page, limit });
   }
 
   @Get('subscriptions')
   @ApiOperation({
-    summary: 'Get all signed-up activities for the current user',
+    summary:
+      'Get all signed-up activities for the current user with pagination',
   })
+  @ApiPagination()
   @ApiResponse({
     status: 200,
-    description: 'Return all subscribed activities for user.',
+    description: 'Return paginated subscribed activities for user.',
   })
-  getSubscriptions(@Auth() auth: any) {
-    return this.userService.getSubscriptions(auth.userId);
+  getSubscriptions(@Auth() auth: any, @Query() query: PaginationDto) {
+    const { page, limit } = query;
+    return this.userService.getSubscriptions(auth.userId, { page, limit });
   }
 }

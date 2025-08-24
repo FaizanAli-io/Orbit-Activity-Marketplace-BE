@@ -2,6 +2,11 @@ import { UpdateUserDto } from './user.dto';
 import { PrismaService } from '../prisma/prisma.service';
 import { Injectable, BadRequestException } from '@nestjs/common';
 import { getCategoryObjectsByIds } from '../utils/category.utils';
+import {
+  PaginationHelper,
+  PaginationOptions,
+  PaginationResult,
+} from '../utils/pagination.utils';
 
 @Injectable()
 export class UserService {
@@ -61,19 +66,69 @@ export class UserService {
     return { message: 'User and auth deleted' };
   }
 
-  async getLiked(id: number): Promise<any[]> {
-    const user = await this.prisma.user.findUnique({
-      where: { id },
-      include: { liked: true },
-    });
-    return user?.liked || [];
+  async getLiked(
+    id: number,
+    paginationOptions: PaginationOptions = {},
+  ): Promise<PaginationResult<any>> {
+    return PaginationHelper.paginate(
+      // Count function - count liked activities for user
+      async () => {
+        const user = await this.prisma.user.findUnique({
+          where: { id },
+          select: { _count: { select: { liked: true } } },
+        });
+        return user?._count.liked || 0;
+      },
+
+      // Data function - get paginated liked activities
+      async (paginationParams) => {
+        const user = await this.prisma.user.findUnique({
+          where: { id },
+          select: {
+            liked: {
+              include: { vendor: true, category: true },
+              skip: paginationParams.skip,
+              take: paginationParams.take,
+              orderBy: { timestamp: 'desc' },
+            },
+          },
+        });
+        return user?.liked || [];
+      },
+      paginationOptions,
+    );
   }
 
-  async getSubscriptions(id: number): Promise<any[]> {
-    const user = await this.prisma.user.findUnique({
-      where: { id },
-      include: { subscribed: true },
-    });
-    return user?.subscribed || [];
+  async getSubscriptions(
+    id: number,
+    paginationOptions: PaginationOptions = {},
+  ): Promise<PaginationResult<any>> {
+    return PaginationHelper.paginate(
+      // Count function - count subscribed activities for user
+      async () => {
+        const user = await this.prisma.user.findUnique({
+          where: { id },
+          select: { _count: { select: { subscribed: true } } },
+        });
+        return user?._count.subscribed || 0;
+      },
+
+      // Data function - get paginated subscribed activities
+      async (paginationParams) => {
+        const user = await this.prisma.user.findUnique({
+          where: { id },
+          select: {
+            subscribed: {
+              include: { vendor: true, category: true },
+              skip: paginationParams.skip,
+              take: paginationParams.take,
+              orderBy: { timestamp: 'desc' },
+            },
+          },
+        });
+        return user?.subscribed || [];
+      },
+      paginationOptions,
+    );
   }
 }
