@@ -16,7 +16,7 @@ export interface ActivityWithCategory {
 }
 
 @Injectable()
-export class EngineCoreService {
+export class SingleRecommendationService {
   // ---------- CATEGORY SCORING ----------
   calculateCategoryScore(
     activity: ActivityWithCategory,
@@ -232,7 +232,7 @@ export class EngineCoreService {
 }
 
 @Module({
-  providers: [EngineCoreService],
-  exports: [EngineCoreService],
+  providers: [SingleRecommendationService],
+  exports: [SingleRecommendationService],
 })
-export class EngineCoreModule {}
+export class SingleRecommendationModule {}

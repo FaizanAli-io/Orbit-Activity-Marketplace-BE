@@ -1,8 +1,11 @@
-import { EngineCoreService, ActivityWithCategory } from './engine.core';
+import {
+  SingleRecommendationService,
+  ActivityWithCategory,
+} from './single.core';
 import { CalendarEvent } from '@prisma/client';
 
-describe('EngineCoreService - Comprehensive Test Suite', () => {
-  const service = new EngineCoreService();
+describe('Single Recommendation Service - Comprehensive Test Suite', () => {
+  const service = new SingleRecommendationService();
 
   describe('Category Scoring System', () => {
     describe('calculateCategoryScore', () => {
