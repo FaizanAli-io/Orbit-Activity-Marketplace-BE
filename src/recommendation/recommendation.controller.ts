@@ -1,7 +1,7 @@
-import { Auth, AuthRole, ApiPagination } from '../decorators';
 import { AuthGuard } from '../guards/auth.guard';
+import { Auth, AuthRole, ApiPagination } from '../decorators';
+import { RecommendationService } from './recommendation.service';
 import { Controller, Get, Query, UseGuards } from '@nestjs/common';
-import { ReccomendationService } from './reccomendation.service';
 import {
   ApiTags,
   ApiResponse,
@@ -10,10 +10,10 @@ import {
 } from '@nestjs/swagger';
 import { PaginationDto } from '../utils/pagination.dto';
 
-@ApiTags('Reccomendation')
-@Controller('reccomendation')
-export class ReccomendationController {
-  constructor(private readonly recService: ReccomendationService) {}
+@ApiTags('Recommendation')
+@Controller('recommendation')
+export class RecommendationController {
+  constructor(private readonly recService: RecommendationService) {}
 
   @Get()
   @AuthRole('USER')

@@ -1,13 +1,13 @@
 import { Injectable } from '@nestjs/common';
 import { CalendarEvent } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
+
 import {
+  EngineCoreService,
   CategoryPreferences,
   ActivityWithCategory,
-  rankActivitiesByCategory,
-  filterAvailableActivities,
-  filterActivitiesAvailableInRange,
-} from './system';
+} from './engine/engine.core';
+
 import {
   PaginationHelper,
   PaginationOptions,
@@ -15,8 +15,11 @@ import {
 } from '../utils/pagination.utils';
 
 @Injectable()
-export class ReccomendationService {
-  constructor(private prisma: PrismaService) {}
+export class RecommendationService {
+  constructor(
+    private prisma: PrismaService,
+    private engineCore: EngineCoreService,
+  ) {}
 
   async getUserRecommendations(
     userId: number,
@@ -79,7 +82,8 @@ export class ReccomendationService {
     const now = new Date();
     const nextWeek = new Date();
     nextWeek.setDate(now.getDate() + 7);
-    const availableInRange = filterActivitiesAvailableInRange(
+
+    const availableInRange = this.engineCore.filterActivitiesAvailableInRange(
       activities.map((a) => ({ id: a.id, availability: a.availability })),
       now,
       nextWeek,
@@ -92,15 +96,15 @@ export class ReccomendationService {
 
     const nonConflictingActivities = availableActivitiesWithCategory.filter(
       (activity) => {
-        const conflicts = filterAvailableActivities(
+        const nonConflicting = this.engineCore.filterAvailableActivities(
           [{ id: activity.id, availability: activity.availability }],
           user.calendar as CalendarEvent[],
         );
-        return conflicts.length > 0;
+        return nonConflicting.length > 0;
       },
     );
 
-    const rankedActivities = rankActivitiesByCategory(
+    const rankedActivities = this.engineCore.rankActivitiesByCategory(
       nonConflictingActivities,
       categoryPreferences,
     );
@@ -113,7 +117,7 @@ export class ReccomendationService {
     return rankedActivities
       .map((ranked) => {
         const activity = fullActivities.find((a) => a.id === ranked.id);
-        return activity ? { ...activity, score: (ranked as any).score } : null;
+        return activity ? { ...activity, score: ranked.score } : null;
       })
       .filter(Boolean);
   }

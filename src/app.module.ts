@@ -9,7 +9,7 @@ import { PaymentModule } from './payment/payment.module';
 import { ActivityModule } from './activity/activity.module';
 import { CategoryModule } from './category/category.module';
 import { CalendarEventModule } from './calendar-event/calendar-event.module';
-import { ReccomendationModule } from './reccomendation/reccomendation.module';
+import { RecommendationModule } from './recommendation/recommendation.module';
 
 @Module({
   imports: [
@@ -20,7 +20,7 @@ import { ReccomendationModule } from './reccomendation/reccomendation.module';
     ActivityModule,
     CategoryModule,
     CalendarEventModule,
-    ReccomendationModule,
+    RecommendationModule,
     ConfigModule.forRoot({ isGlobal: true }),
   ],
   controllers: [AppController],

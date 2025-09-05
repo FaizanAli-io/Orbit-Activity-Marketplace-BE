@@ -39,9 +39,14 @@ export class AppService {
             margin-top: 0;
             margin-bottom: 1.5em;
           }
-          .api-link {
-            display: inline-block;
+          .link-box {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
             margin-top: 1em;
+          }
+          .link {
+            display: inline-block;
             padding: 10px 22px;
             background: #4f8cff;
             color: #fff;
@@ -50,7 +55,7 @@ export class AppService {
             font-weight: 500;
             transition: background 0.2s;
           }
-          .api-link:hover {
+          .link:hover {
             background: #2563eb;
           }
         </style>
@@ -60,7 +65,10 @@ export class AppService {
           <h1>🚀 Orbit Activity Marketplace API</h1>
           <p>Welcome to the Orbit Activity Marketplace API.<br>
           Explore the <b>API documentation</b> below to get started.</p>
-          <a class="api-link" href="/docs" target="_blank">View API Docs</a>
+          <div class="link-box">
+            <a class="link" href="/docs" target="_blank">View API Docs</a>
+            <a class="link" href="https://www.orbithk.com/" target="_blank">Visit Frontend</a>
+          </div>
         </div>
       </body>
       </html>
