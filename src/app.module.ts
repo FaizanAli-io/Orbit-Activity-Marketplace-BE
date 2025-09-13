@@ -1,5 +1,4 @@
 import { Module } from '@nestjs/common';
-import { AppService } from './app.service';
 import { ConfigModule } from '@nestjs/config';
 import { AppController } from './app.controller';
 import { CacheModule } from './cache/redis.module';
@@ -27,6 +26,5 @@ import { RecommendationModule } from './recommendation/recommendation.module';
     RecommendationModule,
   ],
   controllers: [AppController],
-  providers: [AppService],
 })
 export class AppModule {}
