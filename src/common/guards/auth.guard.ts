@@ -6,8 +6,8 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
-import { PrismaService } from '../prisma/prisma.service';
-import { AUTH_ROLE_KEY, IS_PUBLIC_KEY, AuthRoleType } from 'src/decorators';
+import { PrismaService } from '../../prisma/prisma.service';
+import { AuthRoleType, AUTH_ROLE_KEY, IS_PUBLIC_KEY } from '../decorators';
 
 @Injectable()
 export class AuthGuard implements CanActivate {

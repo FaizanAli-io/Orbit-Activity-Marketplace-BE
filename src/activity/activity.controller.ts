@@ -18,21 +18,21 @@ import {
   ApiOperation,
   ApiBearerAuth,
 } from '@nestjs/swagger';
-import { AuthGuard } from '../guards/auth.guard';
+import { AuthGuard } from '../common/guards/auth.guard';
 import { ActivityService } from './activity.service';
 import { PaginationDto } from '../utils/pagination.dto';
 import { CreateActivityDto, UpdateActivityDto } from './dtos';
-import { Auth, AuthRole, ApiPagination } from '../decorators';
+import { Auth, AuthRole, ApiPagination } from '../common/decorators';
 
-@UseGuards(AuthGuard)
 @ApiTags('Activities')
 @Controller('activities')
-@ApiBearerAuth('access-token')
 export class ActivityController {
   constructor(private readonly activityService: ActivityService) {}
 
   @Post()
   @AuthRole('VENDOR')
+  @UseGuards(AuthGuard)
+  @ApiBearerAuth('access-token')
   @ApiOperation({ summary: 'Create a new activity (vendor only)' })
   @ApiBody({ type: CreateActivityDto })
   @ApiResponse({ status: 201, description: 'Activity created.' })
@@ -107,6 +107,8 @@ export class ActivityController {
 
   @Patch(':id')
   @AuthRole('VENDOR')
+  @UseGuards(AuthGuard)
+  @ApiBearerAuth('access-token')
   @ApiOperation({ summary: 'Update activity info (vendor only)' })
   @ApiParam({ name: 'id', type: Number })
   @ApiBody({ type: UpdateActivityDto })
@@ -121,6 +123,8 @@ export class ActivityController {
 
   @Delete(':id')
   @AuthRole('VENDOR')
+  @UseGuards(AuthGuard)
+  @ApiBearerAuth('access-token')
   @ApiOperation({ summary: 'Delete activity (vendor only)' })
   @ApiParam({ name: 'id', type: Number })
   @ApiResponse({ status: 200, description: 'Activity deleted.' })

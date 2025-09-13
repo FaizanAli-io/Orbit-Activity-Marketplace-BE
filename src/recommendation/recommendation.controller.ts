@@ -1,6 +1,6 @@
-import { AuthGuard } from '../guards/auth.guard';
-import { Auth, AuthRole, ApiPagination } from '../decorators';
+import { AuthGuard } from '../common/guards/auth.guard';
 import { RecommendationService } from './recommendation.service';
+import { Auth, AuthRole, ApiPagination } from '../common/decorators';
 import {
   GroupRecommendationDto,
   SingleRecommendationDto,

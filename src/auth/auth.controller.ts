@@ -13,9 +13,9 @@ import {
   RequestResetDto,
   ResetPasswordDto,
 } from './dto';
+import { Auth } from '../common/decorators';
 import { AuthService } from './auth.service';
-import { AuthGuard } from '../guards/auth.guard';
-import { Auth } from '../decorators/auth.decorator';
+import { AuthGuard } from '../common/guards/auth.guard';
 
 @ApiTags('Auth')
 @Controller('auth')

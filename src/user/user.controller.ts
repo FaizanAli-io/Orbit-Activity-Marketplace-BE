@@ -16,9 +16,9 @@ import {
 } from '@nestjs/swagger';
 import { UpdateUserDto } from './user.dto';
 import { UserService } from './user.service';
-import { AuthGuard } from '../guards/auth.guard';
 import { PaginationDto } from '../utils/pagination.dto';
-import { Auth, AuthRole, Public, ApiPagination } from '../decorators';
+import { AuthGuard } from '../common/guards/auth.guard';
+import { Auth, AuthRole, Public, ApiPagination } from '../common/decorators';
 
 @ApiTags('Users')
 @Controller('users')

@@ -13,8 +13,8 @@ import {
   ApiOperation,
   ApiBearerAuth,
 } from '@nestjs/swagger';
-import { Auth, AuthRole } from '../decorators';
-import { AuthGuard } from '../guards/auth.guard';
+import { Auth, AuthRole } from '../common/decorators';
+import { AuthGuard } from '../common/guards/auth.guard';
 import { InteractionService } from './interaction.service';
 
 @ApiTags('Interactions')

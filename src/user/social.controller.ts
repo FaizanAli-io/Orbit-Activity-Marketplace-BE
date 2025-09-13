@@ -15,9 +15,9 @@ import {
   ApiBearerAuth,
 } from '@nestjs/swagger';
 import { SocialService } from './social.service';
-import { AuthGuard } from '../guards/auth.guard';
+import { AuthGuard } from '../common/guards/auth.guard';
 import { PaginationDto } from '../utils/pagination.dto';
-import { Auth, AuthRole, ApiPagination } from '../decorators';
+import { Auth, AuthRole, ApiPagination } from '../common/decorators';
 
 @ApiTags('Social')
 @Controller('social')

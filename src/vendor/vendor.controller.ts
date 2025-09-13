@@ -15,8 +15,8 @@ import {
 } from '@nestjs/swagger';
 import { UpdateVendorDto } from './vendor.dto';
 import { VendorService } from './vendor.service';
-import { AuthGuard } from '../guards/auth.guard';
-import { Auth, AuthRole, Public } from '../decorators';
+import { AuthGuard } from '../common/guards/auth.guard';
+import { Auth, AuthRole, Public } from '../common/decorators';
 
 @ApiTags('Vendors')
 @Controller('vendors')
