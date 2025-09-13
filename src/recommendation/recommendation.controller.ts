@@ -66,6 +66,7 @@ export class RecommendationController {
     description: 'Paginated list of group recommendations',
   })
   async getGroupRecommendations(
+    @Auth() auth: any,
     @Body() groupDto: GroupRecommendationDto,
     @Query() query: PaginationDto,
   ) {
@@ -78,6 +79,7 @@ export class RecommendationController {
       groupDto.userIds,
       dateRange,
       { page, limit },
+      auth.userId,
     );
   }
 }

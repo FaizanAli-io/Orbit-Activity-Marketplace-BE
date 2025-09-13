@@ -24,15 +24,15 @@ import { PaginationDto } from '../utils/pagination.dto';
 import { CreateActivityDto, UpdateActivityDto } from './dtos';
 import { Auth, AuthRole, ApiPagination } from '../decorators';
 
+@UseGuards(AuthGuard)
 @ApiTags('Activities')
 @Controller('activities')
+@ApiBearerAuth('access-token')
 export class ActivityController {
   constructor(private readonly activityService: ActivityService) {}
 
   @Post()
-  @UseGuards(AuthGuard)
   @AuthRole('VENDOR')
-  @ApiBearerAuth('access-token')
   @ApiOperation({ summary: 'Create a new activity (vendor only)' })
   @ApiBody({ type: CreateActivityDto })
   @ApiResponse({ status: 201, description: 'Activity created.' })
@@ -88,9 +88,13 @@ export class ActivityController {
     status: 200,
     description: 'Return paginated activities with filters and sorting.',
   })
-  findAll(@Query() query: any & PaginationDto) {
+  findAll(@Query() query: any & PaginationDto, @Auth() auth: any) {
     const { page, limit, ...filters } = query;
-    return this.activityService.findAll(filters, { page, limit });
+    return this.activityService.findAll(
+      filters,
+      { page, limit },
+      auth?.userId || null,
+    );
   }
 
   @Get(':id')
@@ -102,9 +106,7 @@ export class ActivityController {
   }
 
   @Patch(':id')
-  @UseGuards(AuthGuard)
   @AuthRole('VENDOR')
-  @ApiBearerAuth('access-token')
   @ApiOperation({ summary: 'Update activity info (vendor only)' })
   @ApiParam({ name: 'id', type: Number })
   @ApiBody({ type: UpdateActivityDto })
@@ -118,9 +120,7 @@ export class ActivityController {
   }
 
   @Delete(':id')
-  @UseGuards(AuthGuard)
   @AuthRole('VENDOR')
-  @ApiBearerAuth('access-token')
   @ApiOperation({ summary: 'Delete activity (vendor only)' })
   @ApiParam({ name: 'id', type: Number })
   @ApiResponse({ status: 200, description: 'Activity deleted.' })

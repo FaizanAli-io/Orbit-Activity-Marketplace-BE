@@ -16,7 +16,7 @@ import {
 export class ActivityService {
   constructor(private prisma: PrismaService) {}
 
-  async mapActivity(activity: any): Promise<any> {
+  async buildCategory(activity: any): Promise<any> {
     const categoryInfo = await getCategoryObjectsByIds(this.prisma, [
       activity.categoryId,
     ]);
@@ -57,6 +57,7 @@ export class ActivityService {
   async findAll(
     filters: any,
     paginationOptions: PaginationOptions = {},
+    userId?: number,
   ): Promise<PaginationResult<any>> {
     const where: any = {};
     if (filters.location) where.location = filters.location;
@@ -98,10 +99,29 @@ export class ActivityService {
             vendor: true,
             category: true,
             _count: { select: { likedBy: true, subscribedBy: true } },
+            ...(userId && {
+              likedBy: {
+                where: { id: userId },
+                select: { id: true },
+              },
+              subscribedBy: {
+                where: { id: userId },
+                select: { id: true },
+              },
+            }),
           },
         });
+
         return Promise.all(
-          activities.map((activity) => this.mapActivity(activity)),
+          activities.map((activity) => {
+            const { likedBy, subscribedBy, ...activityData } = activity;
+            const enhancedActivity = {
+              ...activityData,
+              liked: userId ? likedBy.length > 0 : false,
+              subscribed: userId ? subscribedBy.length > 0 : false,
+            };
+            return this.buildCategory(enhancedActivity);
+          }),
         );
       },
       paginationOptions,

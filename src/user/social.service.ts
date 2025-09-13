@@ -4,6 +4,11 @@ import {
   BadRequestException,
 } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
+import {
+  PaginationHelper,
+  PaginationOptions,
+  PaginationResult,
+} from '../utils/pagination.utils';
 
 @Injectable()
 export class SocialService {
@@ -92,5 +97,54 @@ export class SocialService {
     });
 
     return { message: 'Friend removed' };
+  }
+
+  async getFriendSuggestions(
+    userId: number,
+    paginationOptions: PaginationOptions = {},
+  ): Promise<PaginationResult<any>> {
+    const currentUser = await this.prisma.user.findUnique({
+      where: { id: userId },
+      select: {
+        friends: { select: { id: true } },
+        friendOf: { select: { id: true } },
+        pendingFriends: { select: { id: true } },
+        pendingFrom: { select: { id: true } },
+      },
+    });
+
+    if (!currentUser) {
+      return PaginationHelper.buildPaginationResult([], 0, 1, 10);
+    }
+
+    // Collect all user IDs that should be excluded
+    const excludedIds = new Set<number>();
+    excludedIds.add(userId); // Exclude self
+
+    // Add all current friends
+    currentUser.friends.forEach((friend) => excludedIds.add(friend.id));
+    currentUser.friendOf.forEach((friend) => excludedIds.add(friend.id));
+
+    // Add all pending friend requests (both sent and received)
+    currentUser.pendingFriends.forEach((user) => excludedIds.add(user.id));
+    currentUser.pendingFrom.forEach((user) => excludedIds.add(user.id));
+
+    const where = { id: { notIn: Array.from(excludedIds) } };
+
+    return PaginationHelper.paginate(
+      // Count function - reuse the same where clause
+      () => this.prisma.user.count({ where }),
+
+      // Data function - reuse the same where clause
+      async (paginationParams) => {
+        return this.prisma.user.findMany({
+          where,
+          skip: paginationParams.skip,
+          take: paginationParams.take,
+          orderBy: { name: 'asc' },
+        });
+      },
+      paginationOptions,
+    );
   }
 }

@@ -155,7 +155,12 @@ export class RecommendationService {
 
     const fullActivities = await this.prisma.activity.findMany({
       where: { id: { in: rankedActivities.map((r) => r.id) } },
-      include: { vendor: true, category: true },
+      include: {
+        vendor: true,
+        category: true,
+        likedBy: { where: { id: user.id }, select: { id: true } },
+        subscribedBy: { where: { id: user.id }, select: { id: true } },
+      },
     });
 
     return rankedActivities
@@ -165,8 +170,20 @@ export class RecommendationService {
           this.logger.log(
             `Activity ${activity.id} - Score: ${ranked.score?.toFixed(2)}`,
           );
+
+          // Add liked and subscribed fields
+          const { likedBy, subscribedBy, ...activityWithoutRelations } =
+            activity as any;
+          const enrichedActivity = {
+            ...activityWithoutRelations,
+            score: ranked.score,
+            liked: likedBy.length > 0,
+            subscribed: subscribedBy.length > 0,
+          };
+
+          return enrichedActivity;
         }
-        return activity ? { ...activity, score: ranked.score } : null;
+        return null;
       })
       .filter(Boolean);
   }
@@ -175,6 +192,7 @@ export class RecommendationService {
     userIds: number[],
     dateRange: { rangeStart?: Date; rangeEnd?: Date } = {},
     paginationOptions: PaginationOptions = {},
+    requestingUserId?: number,
   ): Promise<PaginationResult<any>> {
     if (userIds.length < 2) {
       throw new Error(
@@ -227,8 +245,10 @@ export class RecommendationService {
       );
     });
 
-    const enrichedRecommendations =
-      await this.enrichGroupRecommendations(groupRecommendations);
+    const enrichedRecommendations = await this.enrichGroupRecommendations(
+      groupRecommendations,
+      requestingUserId,
+    );
 
     const { page, limit } =
       PaginationHelper.validateAndNormalize(paginationOptions);
@@ -319,6 +339,7 @@ export class RecommendationService {
 
   private async enrichGroupRecommendations(
     recommendations: ActivityGroupScore[],
+    requestingUserId?: number,
   ): Promise<any[]> {
     if (recommendations.length === 0) return [];
 
@@ -328,7 +349,17 @@ export class RecommendationService {
 
     const fullActivities = await this.prisma.activity.findMany({
       where: { id: { in: recommendations.map((r) => r.id) } },
-      include: { vendor: true, category: true },
+      include: {
+        vendor: true,
+        category: true,
+        ...(requestingUserId && {
+          likedBy: { where: { id: requestingUserId }, select: { id: true } },
+          subscribedBy: {
+            where: { id: requestingUserId },
+            select: { id: true },
+          },
+        }),
+      },
     });
 
     const enrichedResults = recommendations
@@ -336,14 +367,22 @@ export class RecommendationService {
         const activity = fullActivities.find((a) => a.id === recommendation.id);
         if (!activity) return null;
 
+        // Separate the liked/subscribed relations from the activity
+        const { likedBy, subscribedBy, ...activityWithoutRelations } =
+          activity as any;
+
         return {
-          ...activity,
+          ...activityWithoutRelations,
           groupScore: {
             availableUsers: recommendation.availableUsers,
             availabilityCount: recommendation.availabilityCount,
             aggregatedCategoryScore: recommendation.aggregatedCategoryScore,
             finalScore: recommendation.finalScore,
           },
+          ...(requestingUserId && {
+            liked: Array.isArray(likedBy) && likedBy.length > 0,
+            subscribed: Array.isArray(subscribedBy) && subscribedBy.length > 0,
+          }),
         };
       })
       .filter(Boolean);
