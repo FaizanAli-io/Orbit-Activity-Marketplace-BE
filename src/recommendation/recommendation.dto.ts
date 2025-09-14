@@ -1,14 +1,15 @@
-import {
-  IsOptional,
-  IsDateString,
-  IsArray,
-  IsNumber,
-  ArrayMinSize,
-} from 'class-validator';
-import { Type } from 'class-transformer';
+import { Transform } from 'class-transformer';
+import { PaginationDto } from '../utils/pagination.dto';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import {
+  IsInt,
+  IsArray,
+  IsOptional,
+  ArrayMinSize,
+  IsDateString,
+} from 'class-validator';
 
-export class DateRangeDto {
+class RecommendationBaseQueryDto extends PaginationDto {
   @ApiPropertyOptional({
     description:
       'Start date for filtering activities (ISO format). Defaults to now if not provided.',
@@ -28,19 +29,25 @@ export class DateRangeDto {
   rangeEnd?: string;
 }
 
-export class SingleRecommendationDto extends DateRangeDto {}
+export class SingleRecommendationQueryDto extends RecommendationBaseQueryDto {}
 
-export class GroupRecommendationDto extends DateRangeDto {
+export class GroupRecommendationQueryDto extends RecommendationBaseQueryDto {
   @ApiProperty({
-    description: 'Array of user IDs for the group (minimum 2)',
-    example: [1, 2, 3],
-    type: [Number],
+    description: 'Comma-separated user IDs for the group (minimum 2)',
+    example: '1,2,3',
+    type: String,
+  })
+  @Transform(({ value }) => {
+    if (typeof value === 'string') {
+      const ids = value.split(',').map((id) => parseInt(id.trim(), 10));
+      return ids;
+    }
+    return value;
   })
   @IsArray()
   @ArrayMinSize(2, {
     message: 'At least 2 users are required for group recommendations',
   })
-  @IsNumber({}, { each: true })
-  @Type(() => Number)
+  @IsInt({ each: true, message: 'All user IDs must be valid numbers' })
   userIds: number[];
 }

@@ -1,10 +1,11 @@
 import Redis from 'ioredis';
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 
 @Injectable()
 export class RedisService {
   private client: Redis;
   private defaultTtl: number;
+  private readonly logger = new Logger(RedisService.name);
 
   constructor() {
     const redisUrl = process.env.UPSTASH_REDIS_URL;
@@ -12,8 +13,8 @@ export class RedisService {
     this.defaultTtl = parseInt(process.env.REDIS_CACHE_TTL || '300', 10);
 
     this.client = new Redis(redisUrl, { tls: {} });
-    this.client.on('connect', () => console.log('✅ Connected to Redis'));
-    this.client.on('error', (err) => console.error('❌ Redis Error', err));
+    this.client.on('connect', () => this.logger.log('✅ Connected to Redis'));
+    this.client.on('error', (err) => this.logger.error('❌ Redis Error', err));
   }
 
   /** Normalize cache key with method and path */
@@ -31,7 +32,7 @@ export class RedisService {
   async get(method: string, url: string): Promise<any | null> {
     const key = this.generateKey(method, url);
     const data = await this.client.get(key);
-    console.log(`[RedisService] GET ${key} -> ${data ? 'HIT' : 'MISS'}`);
+    this.logger.log(`GET ${key} -> ${data ? 'HIT' : 'MISS'}`);
     return data ? JSON.parse(data) : null;
   }
 
@@ -40,19 +41,19 @@ export class RedisService {
     const key = this.generateKey(method, url);
     const effectiveTtl = ttl ?? this.defaultTtl;
     await this.client.set(key, JSON.stringify(value), 'EX', effectiveTtl);
-    console.log(`[RedisService] SET ${key} (ttl: ${effectiveTtl})`);
+    this.logger.log(`SET ${key} (ttl: ${effectiveTtl})`);
   }
 
   /** DELETE key from cache */
   async del(key: string) {
     await this.client.del(key);
-    console.log(`[RedisService] DEL ${key}`);
+    this.logger.log(`DEL ${key}`);
   }
 
   /** Get all keys (for invalidation) */
   async keys(): Promise<string[]> {
     const all = await this.client.keys('*');
-    console.log('[RedisService] KEYS =', all);
+    this.logger.log('KEYS =', all);
     return all;
   }
 }
