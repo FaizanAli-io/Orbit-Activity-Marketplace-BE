@@ -1,6 +1,6 @@
-import { UpdateUserDto } from './user.dto';
-import { PrismaService } from '../prisma/prisma.service';
 import { Injectable, BadRequestException } from '@nestjs/common';
+import { PrismaService } from '../prisma/prisma.service';
+import { UpdateUserDto } from './user.dto';
 import { getCategoryObjectsByIds } from '../utils/category.utils';
 import {
   PaginationHelper,
@@ -12,30 +12,78 @@ import {
 export class UserService {
   constructor(private prisma: PrismaService) {}
 
-  async mapUser(user: any): Promise<any> {
+  private async mapUser(
+    user: any,
+    opts?: { isFriend?: boolean; hasPendingRequest?: boolean },
+  ): Promise<any> {
     const { auth, preferences, ...u } = user;
+
+    const prefIds = Array.isArray(preferences)
+      ? preferences.filter((id): id is number => typeof id === 'number')
+      : [];
+
     return {
       ...u,
-      email: auth[0]?.email,
-      preferences: await getCategoryObjectsByIds(
-        this.prisma,
-        Array.isArray(preferences)
-          ? preferences.filter((id): id is number => typeof id === 'number')
-          : [],
-      ),
+      email: auth?.[0]?.email,
+      preferences: prefIds.length
+        ? await getCategoryObjectsByIds(this.prisma, prefIds)
+        : [],
+      isFriend: opts?.isFriend ?? false,
+      hasPendingRequest: opts?.hasPendingRequest ?? false,
     };
   }
 
-  async findAll(): Promise<any[]> {
-    const users = await this.prisma.user.findMany({
-      include: { auth: { select: { email: true } } },
-    });
+  async findAll(
+    currentUserId: number,
+    search?: string,
+    pagination: PaginationOptions = {},
+  ): Promise<PaginationResult<any>> {
+    return PaginationHelper.paginate(
+      // Count function
+      () =>
+        this.prisma.user.count({
+          where: search
+            ? { name: { contains: search, mode: 'insensitive' } }
+            : {},
+        }),
 
-    return Promise.all(users.map((user) => this.mapUser(user)));
+      // Data function
+      async ({ skip, take }) => {
+        const users = await this.prisma.user.findMany({
+          where: search
+            ? { name: { contains: search, mode: 'insensitive' } }
+            : {},
+          include: {
+            auth: { select: { email: true } },
+            _count: {
+              select: {
+                friends: { where: { id: currentUserId } },
+                pendingFrom: { where: { id: currentUserId } },
+              },
+            },
+          },
+          skip,
+          take,
+          orderBy: { id: 'asc' },
+        });
+
+        return Promise.all(
+          users.map((u) => {
+            const { _count, ...rest } = u;
+            return this.mapUser(rest, {
+              isFriend: _count.friends > 0,
+              hasPendingRequest: _count.pendingFrom > 0,
+            });
+          }),
+        );
+      },
+
+      pagination,
+    );
   }
 
   async update(id: number, data: UpdateUserDto): Promise<any> {
-    if (data.preferences && Array.isArray(data.preferences)) {
+    if (data.preferences?.length) {
       const validSubcategories = await this.prisma.category.findMany({
         where: { id: { in: data.preferences }, parentId: { not: null } },
         select: { id: true },
@@ -45,19 +93,21 @@ export class UserService {
       const invalidIds = data.preferences.filter(
         (id) => !validIds.includes(id),
       );
-      if (invalidIds.length > 0) {
+
+      if (invalidIds.length) {
         throw new BadRequestException(
           `Invalid subcategory IDs: ${invalidIds.join(', ')}`,
         );
       }
     }
 
-    await this.prisma.user.update({ where: { id }, data });
-    const userWithAuth = await this.prisma.user.findUnique({
+    const updated = await this.prisma.user.update({
       where: { id },
+      data,
       include: { auth: { select: { email: true } } },
     });
-    return this.mapUser(userWithAuth);
+
+    return this.mapUser(updated);
   }
 
   async remove(id: number): Promise<{ message: string }> {
@@ -71,30 +121,29 @@ export class UserService {
     paginationOptions: PaginationOptions = {},
   ): Promise<PaginationResult<any>> {
     return PaginationHelper.paginate(
-      // Count function - count liked activities for user
-      async () => {
-        const user = await this.prisma.user.findUnique({
-          where: { id },
-          select: { _count: { select: { liked: true } } },
-        });
-        return user?._count.liked || 0;
-      },
+      async () =>
+        (
+          await this.prisma.user.findUnique({
+            where: { id },
+            select: { _count: { select: { liked: true } } },
+          })
+        )?._count.liked || 0,
 
-      // Data function - get paginated liked activities
-      async (paginationParams) => {
-        const user = await this.prisma.user.findUnique({
-          where: { id },
-          select: {
-            liked: {
-              include: { vendor: true, category: true },
-              skip: paginationParams.skip,
-              take: paginationParams.take,
-              orderBy: { timestamp: 'desc' },
+      async ({ skip, take }) =>
+        (
+          await this.prisma.user.findUnique({
+            where: { id },
+            select: {
+              liked: {
+                include: { vendor: true, category: true },
+                skip,
+                take,
+                orderBy: { timestamp: 'desc' },
+              },
             },
-          },
-        });
-        return user?.liked || [];
-      },
+          })
+        )?.liked || [],
+
       paginationOptions,
     );
   }
@@ -104,30 +153,29 @@ export class UserService {
     paginationOptions: PaginationOptions = {},
   ): Promise<PaginationResult<any>> {
     return PaginationHelper.paginate(
-      // Count function - count subscribed activities for user
-      async () => {
-        const user = await this.prisma.user.findUnique({
-          where: { id },
-          select: { _count: { select: { subscribed: true } } },
-        });
-        return user?._count.subscribed || 0;
-      },
+      async () =>
+        (
+          await this.prisma.user.findUnique({
+            where: { id },
+            select: { _count: { select: { subscribed: true } } },
+          })
+        )?._count.subscribed || 0,
 
-      // Data function - get paginated subscribed activities
-      async (paginationParams) => {
-        const user = await this.prisma.user.findUnique({
-          where: { id },
-          select: {
-            subscribed: {
-              include: { vendor: true, category: true },
-              skip: paginationParams.skip,
-              take: paginationParams.take,
-              orderBy: { timestamp: 'desc' },
+      async ({ skip, take }) =>
+        (
+          await this.prisma.user.findUnique({
+            where: { id },
+            select: {
+              subscribed: {
+                include: { vendor: true, category: true },
+                skip,
+                take,
+                orderBy: { timestamp: 'desc' },
+              },
             },
-          },
-        });
-        return user?.subscribed || [];
-      },
+          })
+        )?.subscribed || [],
+
       paginationOptions,
     );
   }

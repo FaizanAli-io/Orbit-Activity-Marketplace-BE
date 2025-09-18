@@ -1,10 +1,11 @@
 import { ApiPropertyOptional } from '@nestjs/swagger';
+import { PaginationDto } from '../utils/pagination.dto';
 import {
-  IsOptional,
-  IsString,
-  IsArray,
-  ArrayMaxSize,
   IsInt,
+  IsArray,
+  IsString,
+  IsOptional,
+  ArrayMaxSize,
 } from 'class-validator';
 
 export class UpdateUserDto {
@@ -32,4 +33,14 @@ export class UpdateUserDto {
   @IsOptional()
   @IsArray()
   preferences?: number[];
+}
+
+export class UserQueryDto extends PaginationDto {
+  @ApiPropertyOptional({
+    description: 'Filter users by name (case-insensitive partial match)',
+    example: 'John',
+  })
+  @IsOptional()
+  @IsString()
+  search?: string;
 }

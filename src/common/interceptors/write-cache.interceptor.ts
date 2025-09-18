@@ -1,15 +1,20 @@
 import {
   Injectable,
-  CallHandler,
   NestInterceptor,
   ExecutionContext,
+  CallHandler,
 } from '@nestjs/common';
 import { Observable, tap } from 'rxjs';
 import { RedisService } from '../../cache/redis.service';
+import { Reflector } from '@nestjs/core';
+import { NO_CACHE_KEY } from '../decorators/no-cache.decorator';
 
 @Injectable()
 export class WriteCacheInterceptor implements NestInterceptor {
-  constructor(private readonly redis: RedisService) {}
+  constructor(
+    private readonly redis: RedisService,
+    private readonly reflector: Reflector,
+  ) {}
 
   intercept(context: ExecutionContext, next: CallHandler): Observable<any> {
     const req = context.switchToHttp().getRequest();
@@ -19,16 +24,26 @@ export class WriteCacheInterceptor implements NestInterceptor {
       return next.handle();
     }
 
-    // Extract first path segment as prefix
-    const u = new URL(req.originalUrl, 'http://localhost');
-    const prefix = u.pathname.replace(/^\//, '').split('/')[0];
+    const skip =
+      this.reflector.getAllAndOverride<boolean>(NO_CACHE_KEY, [
+        context.getHandler(),
+        context.getClass(),
+      ]) ?? false;
+    if (skip) return next.handle();
+
+    const url = new URL(req.originalUrl, 'http://localhost');
+    const prefix = url.pathname.replace(/^\//, '').split('/')[0];
 
     return next.handle().pipe(
       tap(async () => {
-        const allKeys = await this.redis.keys();
-        const matchedKeys = allKeys.filter((k) => k.includes(prefix));
-        for (const key of matchedKeys) {
-          await this.redis.del(key);
+        try {
+          const keys = await this.redis.keys();
+          const toDelete = keys.filter((k) => k.includes(prefix));
+
+          await Promise.all(toDelete.map((k) => this.redis.del(k)));
+        } catch (err) {
+          // swallow errors to avoid affecting the response
+          console.error('Cache invalidation failed', err);
         }
       }),
     );
