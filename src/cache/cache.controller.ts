@@ -1,5 +1,5 @@
 import { NoCache } from '../common/decorators';
-import { RedisService } from './redis.service';
+import { RedisService } from './cache.service';
 import { Controller, Get, Delete, Query } from '@nestjs/common';
 import { ApiTags, ApiQuery, ApiResponse, ApiOperation } from '@nestjs/swagger';
 

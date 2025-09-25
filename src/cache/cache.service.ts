@@ -1,5 +1,5 @@
-import { Injectable, Logger } from '@nestjs/common';
 import Redis from 'ioredis';
+import { Injectable, Logger } from '@nestjs/common';
 
 @Injectable()
 export class RedisService {
@@ -44,9 +44,7 @@ export class RedisService {
   }
 
   async keys(): Promise<string[]> {
-    const all = await this.client.keys('*');
-    this.logger.log('KEYS', all);
-    return all;
+    return this.client.keys('*');
   }
 
   async deleteAll(prefix = '*'): Promise<{ deleted: number; keys: string[] }> {

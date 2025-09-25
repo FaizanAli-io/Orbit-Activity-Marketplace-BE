@@ -4,9 +4,9 @@ import {
   NestInterceptor,
   ExecutionContext,
 } from '@nestjs/common';
-import { Observable, of, tap } from 'rxjs';
-import { RedisService } from '../../cache/redis.service';
 import { Reflector } from '@nestjs/core';
+import { Observable, of, tap } from 'rxjs';
+import { RedisService } from '../../cache/cache.service';
 import { NO_CACHE_KEY } from '../decorators/no-cache.decorator';
 
 @Injectable()
